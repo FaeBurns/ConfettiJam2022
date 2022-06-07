@@ -24,7 +24,7 @@ public class TimeResourceManager : MonoBehaviour
     /// Gets the initial amount of time the player should hold.
     /// </summary>
     [field: SerializeField]
-    public float InitialTime { get; private set; }
+    public float MaxTime { get; private set; }
 
     /// <summary>
     /// Gets the amount of time the player has left.
@@ -51,6 +51,11 @@ public class TimeResourceManager : MonoBehaviour
     {
         TimeResource -= amount;
         TimeRemoved?.Invoke(amount);
+    }
+
+    private void Awake()
+    {
+        TimeResource = MaxTime;
     }
 
     private void Update()
