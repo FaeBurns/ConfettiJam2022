@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BeanLib.References;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,12 +11,12 @@ using UnityEngine.UI;
 /// Helper functions for animations used by the Hourglass.
 /// </summary>
 [RequireComponent(typeof(Animator))]
-public class HourglassAnimator : MonoBehaviour
+public class HourglassAnimator : ReferenceResolvedBehaviour
 {
+    [AutoReference] private TimeResourceManager timeManager = null;
     private Animator animator;
 
     [Header("References")]
-    [SerializeField] private TimeResourceManager timeManager;
     [SerializeField] private RectTransform shakeTransform;
 
     [Header("Colors")]
@@ -103,8 +104,11 @@ public class HourglassAnimator : MonoBehaviour
         shakeTransform.anchoredPosition = Vector2.zero;
     }
 
-    private void Awake()
+    /// <inheritdoc/>
+    public override void Start()
     {
+        RunResolve();
+
         animator = GetComponent<Animator>();
 
         timeManager.TimeRemoved += (amount) => OnHurt();

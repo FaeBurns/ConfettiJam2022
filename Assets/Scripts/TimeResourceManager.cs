@@ -1,3 +1,4 @@
+using BeanLib.References;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -64,6 +65,8 @@ public class TimeResourceManager : MonoBehaviour
 
     private void Awake()
     {
+        ReferenceStore.ReplaceReference(this);
+
         Time = MaxTime;
     }
 

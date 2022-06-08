@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using BeanLib.References;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,9 +9,9 @@ using UnityEngine.UI;
 /// <summary>
 /// Handles the display of the time left in the <see cref="TimeResourceManager"/>.
 /// </summary>
-public class HourglassDisplay : MonoBehaviour
+public class HourglassDisplay : ReferenceResolvedBehaviour
 {
-    [SerializeField] private TimeResourceManager timeManager;
+    [AutoReference] private TimeResourceManager timeManager = null;
 
     [SerializeField] private RectTransform spentTransform;
     [SerializeField] private RectTransform leftTransform;
