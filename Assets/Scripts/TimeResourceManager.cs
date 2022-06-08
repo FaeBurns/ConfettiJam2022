@@ -31,7 +31,7 @@ public class TimeResourceManager : MonoBehaviour
     /// A value of 1 is equal to 1 second.
     /// </summary>
     [field: SerializeField]
-    public float TimeResource { get; private set; }
+    public float Time { get; private set; }
 
     /// <summary>
     /// Adds time to the store.
@@ -39,7 +39,8 @@ public class TimeResourceManager : MonoBehaviour
     /// <param name="amount">The amount of time to add.</param>
     public void Add(float amount)
     {
-        TimeResource += amount;
+        amount = ClampAmount(amount);
+        Time += amount;
         TimeAdded?.Invoke(amount);
     }
 
@@ -49,18 +50,26 @@ public class TimeResourceManager : MonoBehaviour
     /// <param name="amount">The amount of time to drain.</param>
     public void Drain(float amount)
     {
-        TimeResource -= amount;
+        amount = ClampAmount(amount);
+        Time -= amount;
         TimeRemoved?.Invoke(amount);
+    }
+
+    private float ClampAmount(float amount)
+    {
+        float diff = MaxTime - Time;
+
+        return Mathf.Min(diff, amount);
     }
 
     private void Awake()
     {
-        TimeResource = MaxTime;
+        Time = MaxTime;
     }
 
     private void Update()
     {
         // drain time by standardDrain per second
-        TimeResource -= standardDrain * Time.deltaTime;
+        Time -= standardDrain * UnityEngine.Time.deltaTime;
     }
 }
