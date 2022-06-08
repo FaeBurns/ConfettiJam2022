@@ -2,7 +2,9 @@
   "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
   "settings": {
     "documentationRules": {
-	    "documentInternalElements": false
+      "companyName": "BovineLabs",
+	  "copyrightText": "    Copyright (c) BovineLabs. All rights reserved.",
+	  "documentInternalElements": false
     }
   }
 }
