@@ -307,7 +307,7 @@ GameObject:
   - component: {fileID: 188336071}
   - component: {fileID: 188336070}
   m_Layer: 5
-  m_Name: Left
+  m_Name: TopFill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -329,7 +329,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 15}
   m_SizeDelta: {x: 128, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &188336070
@@ -635,8 +635,8 @@ MonoBehaviour:
   spentTransform: {fileID: 1069041983}
   leftTransform: {fileID: 188336069}
   timeText: {fileID: 1902810981}
-  spentMinMax: {x: 0, y: -64}
-  leftMinMax: {x: 64, y: 0}
+  spentMinMax: {x: -35, y: -86}
+  leftMinMax: {x: -36, y: 15}
 --- !u!114 &390171609
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -650,7 +650,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shakeTransform: {fileID: 1083427413}
-  sandColor: {r: 1, g: 1, b: 1, a: 1}
+  sandColor: {r: 1, g: 0.88161534, b: 0.504717, a: 1}
   hurtColor: {r: 1, g: 0, b: 0, a: 1}
   healColor: {r: 0, g: 1, b: 0, a: 1}
   images:
@@ -1412,7 +1412,7 @@ GameObject:
   - component: {fileID: 1069041985}
   - component: {fileID: 1069041984}
   m_Layer: 5
-  m_Name: Spent
+  m_Name: BottomFill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1434,7 +1434,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: -86}
   m_SizeDelta: {x: 128, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1069041984
