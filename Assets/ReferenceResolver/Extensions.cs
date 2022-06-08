@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine;
 
 namespace BeanLib.References
 {
@@ -18,10 +15,11 @@ namespace BeanLib.References
         {
             FieldInfo[] fields = target.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
 
+            ReferenceResolver referenceResolver = new ReferenceResolver();
+
             foreach (FieldInfo field in fields)
             {
-                ReferenceResolver referenceResolver = new ReferenceResolver(target, field);
-                referenceResolver.Resolve();
+                referenceResolver.Resolve(target, field);
             }
         }
     }

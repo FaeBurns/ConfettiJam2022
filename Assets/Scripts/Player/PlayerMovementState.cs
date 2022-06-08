@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using UnityEngine;
-
-public enum PlayerMovementState
+﻿public enum PlayerMovementState
 {
     Normal,
     Dash,

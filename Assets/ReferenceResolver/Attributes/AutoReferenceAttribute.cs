@@ -1,8 +1,5 @@
-using BeanLib.References.Exceptions;
-using System.Collections;
-using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine;
+using BeanLib.References.Exceptions;
 
 namespace BeanLib.References
 {
@@ -10,9 +7,10 @@ namespace BeanLib.References
     /// Injects a reference into a field.
     /// </summary>
     [System.AttributeUsage(System.AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
-    public sealed class AutoReferenceAttribute : System.Attribute
+    public sealed class AutoReferenceAttribute : System.Attribute, IResolver
     {
-        public static void Resolve(object hostObject, FieldInfo field)
+        /// <inheritdoc/>
+        public void Resolve(object hostObject, FieldInfo field)
         {
             AutoReferenceAttribute attribte = field.GetCustomAttribute<AutoReferenceAttribute>();
 

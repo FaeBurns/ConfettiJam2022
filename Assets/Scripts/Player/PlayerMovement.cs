@@ -1,7 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using BeanLib.References;
+using UnityEngine;
 
 /// <summary>
 /// Component responsible for handling the player's movement.
@@ -9,27 +8,12 @@ using BeanLib.References;
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerMovement : ReferenceResolvedBehaviour
 {
-    private PlayerMovementState MovementState
-    {
-        get => _movementState;
-        set
-        {
-            if (_movementState != value)
-            {
-                _movementState = value;
-
-                // only show trail when dashing
-                trailRenderer.emitting = _movementState == PlayerMovementState.Dash;
-            }
-        }
-    }
-
     private Vector2 velToMove;
-    private PlayerMovementState _movementState;
+    private PlayerMovementState movementState;
 
-    [AutoReference] private TimeResourceManager timeManager;
-    [BindComponent] private Rigidbody2D rb;
-    [BindComponent(Child = true)] private TrailRenderer trailRenderer;
+    [AutoReference] private TimeResourceManager timeManager = null;
+    [BindComponent] private Rigidbody2D rb = null;
+    [BindComponent(Child = true)] private TrailRenderer trailRenderer = null;
 
     [Header("Fields")]
     [SerializeField] private float speed = 0.25f;
@@ -37,35 +21,51 @@ public class PlayerMovement : ReferenceResolvedBehaviour
     [SerializeField] private float dashTime = 0.5f;
     [SerializeField] private float timeCost = 1f;
 
+    private PlayerMovementState MovementState
+    {
+        get => movementState;
+        set
+        {
+            if (movementState != value)
+            {
+                movementState = value;
+
+                // only show trail when dashing
+                trailRenderer.emitting = movementState == PlayerMovementState.Dash;
+            }
+        }
+    }
+
     private void Update()
     {
         // get both forms of input
         Vector2 input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         Vector2 rawInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
-        switch (MovementState)
+        if (MovementState == PlayerMovementState.Normal)
         {
-            case PlayerMovementState.Normal:
-                // normalize but keep magnitude - stops the player from moving faster when moving diagonally
-                velToMove = Mathf.Min(input.magnitude, 1) * input.normalized;
+            // normalize but keep magnitude - stops the player from moving faster when moving diagonally
+            velToMove = Mathf.Min(input.magnitude, 1) * input.normalized;
 
-                // if there is any input at all
-                if (rawInput.sqrMagnitude > 0f)
-                {
-                    velToMove = rawInput.normalized;
-                }
-                velToMove *= speed;
-                break;
-            case PlayerMovementState.Dash:
-                velToMove = rawInput.normalized * dashSpeed;
-                break;
-            default:
-                break;
+            // if there is any input at all
+            if (rawInput.sqrMagnitude > 0f)
+            {
+                velToMove = rawInput.normalized;
+            }
+
+            velToMove *= speed;
         }
 
-        if (Input.GetButtonDown("Dash") && MovementState == PlayerMovementState.Normal && velToMove.sqrMagnitude > 0)
+        if (Input.GetButtonDown("Dash") && MovementState == PlayerMovementState.Normal)
         {
-            StartCoroutine(Dash());
+            // get dash velocity
+            velToMove = rawInput.normalized * dashSpeed;
+
+            // only dash if there is any velocity
+            if (velToMove.sqrMagnitude > 0f)
+            {
+                StartCoroutine(Dash());
+            }
         }
     }
 
@@ -78,6 +78,7 @@ public class PlayerMovement : ReferenceResolvedBehaviour
             case PlayerMovementState.Dash:
                 rb.MovePosition(rb.position + velToMove);
                 break;
+
             // else do nothing
             default:
                 break;

@@ -1,13 +1,21 @@
-﻿using System.Collections;
-using System.Reflection;
+﻿using System.Reflection;
 using UnityEngine;
 
 namespace BeanLib.References
 {
+    /// <summary>
+    /// Injects a unity component into a field.
+    /// </summary>
     [System.AttributeUsage(System.AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
-    public sealed class BindComponentAttribute : System.Attribute
+    public sealed class BindComponentAttribute : System.Attribute, IResolver
     {
-        public static void Resolve(object hostObject, FieldInfo field)
+        /// <summary>
+        /// Gets or Sets a value indicating whether this <see cref="IResolver"/> should look for the component on children instead.
+        /// </summary>
+        public bool Child { get; set; }
+
+        /// <inheritdoc/>
+        public void Resolve(object hostObject, FieldInfo field)
         {
             BindComponentAttribute attribte = field.GetCustomAttribute<BindComponentAttribute>();
 
@@ -34,7 +42,5 @@ namespace BeanLib.References
                 field.SetValue(hostObject, component);
             }
         }
-
-        public bool Child { get; set; }
     }
 }

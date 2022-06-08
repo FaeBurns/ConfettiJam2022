@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using BeanLib.References.Exceptions;
 
 namespace BeanLib.References
 {
@@ -13,27 +10,51 @@ namespace BeanLib.References
     /// </summary>
     public class ReferenceResolver
     {
-        private readonly object hostObject;
-        private readonly FieldInfo field;
+        private readonly HashSet<Type> resolverTypes = new HashSet<Type>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReferenceResolver"/> class.
         /// </summary>
-        /// <param name="field">The field to resolve the reference on.</param>
-        /// <param name="hostObject">The object this instance of the field is present on.</param>
-        public ReferenceResolver(object hostObject, FieldInfo field)
+        public ReferenceResolver()
         {
-            this.hostObject = hostObject;
-            this.field = field;
+            resolverTypes = GetAllResolverTypes();
         }
 
         /// <summary>
         /// Tries to resolve references present on the target field.
         /// </summary>
-        public void Resolve()
+        /// <param name="hostObject">The object this instance of the field is present on.</param>
+        /// <param name="field">The field to resolve the reference on.</param>
+        public void Resolve(object hostObject, FieldInfo field)
         {
-            AutoReferenceAttribute.Resolve(hostObject, field);
-            BindComponentAttribute.Resolve(hostObject, field);
+            foreach (Type resolverType in resolverTypes)
+            {
+                IResolver resolver = (IResolver)field.GetCustomAttribute(resolverType);
+
+                // check if resolver is present on the field
+                if (resolver != null)
+                {
+                    resolver.Resolve(hostObject, field);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets all types that implement the interface <see cref="IResolver"/>.
+        /// </summary>
+        /// <returns>A <see cref="HashSet{T}"/>containing all resolver types.</returns>
+        public HashSet<Type> GetAllResolverTypes()
+        {
+            IEnumerable<Type> types = Assembly.GetExecutingAssembly().GetTypes().Where((t) => t.GetInterfaces().Contains(typeof(IResolver)));
+
+            HashSet<Type> setTypes = new HashSet<Type>();
+
+            foreach (Type type in types)
+            {
+                setTypes.Add(type);
+            }
+
+            return setTypes;
         }
     }
 }

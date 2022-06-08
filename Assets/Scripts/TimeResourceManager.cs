@@ -1,7 +1,5 @@
-using BeanLib.References;
 using System;
-using System.Collections;
-using System.Collections.Generic;
+using BeanLib.References;
 using UnityEngine;
 
 /// <summary>
