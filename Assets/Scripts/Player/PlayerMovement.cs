@@ -13,7 +13,11 @@ public class PlayerMovement : ReferenceResolvedBehaviour
 
     [AutoReference] private TimeResourceManager timeManager = null;
     [BindComponent] private Rigidbody2D rb = null;
-    [BindComponent(Child = true)] private TrailRenderer trailRenderer = null;
+    [BindMultiComponent(Child = true)] private TrailRenderer[] trailRenderers = null;
+
+    [Header("Children")]
+    [SerializeField]
+    private Transform moveDirectionParent;
 
     [Header("Fields")]
     [SerializeField] private float speed = 0.25f;
@@ -31,7 +35,7 @@ public class PlayerMovement : ReferenceResolvedBehaviour
                 movementState = value;
 
                 // only show trail when dashing
-                trailRenderer.emitting = movementState == PlayerMovementState.Dash;
+                trailRenderers.Execute((trail) => trail.emitting = movementState == PlayerMovementState.Dash);
             }
         }
     }
@@ -67,6 +71,8 @@ public class PlayerMovement : ReferenceResolvedBehaviour
                 StartCoroutine(Dash());
             }
         }
+
+        UpdateForwardDirectionTransform();
     }
 
     private void FixedUpdate()
@@ -110,5 +116,24 @@ public class PlayerMovement : ReferenceResolvedBehaviour
 
         // reset movement state
         MovementState = PlayerMovementState.Normal;
+    }
+
+    private void UpdateForwardDirectionTransform()
+    {
+        // only update if currently moving
+        if (velToMove.sqrMagnitude > 0)
+        {
+            // can't find the correct variation to use here - have to do some wrangling.
+            Vector3 convertedForwardVector = new Vector3(velToMove.normalized.x, 0, velToMove.normalized.y);
+
+            // set forward vector
+            moveDirectionParent.forward = convertedForwardVector;
+
+            // get as rotation
+            Vector3 rotation = moveDirectionParent.rotation.eulerAngles;
+
+            // move value in Y to Z - fixes 2d to 3d conversion
+            moveDirectionParent.rotation = Quaternion.Euler(0, 0, -rotation.y);
+        }
     }
 }

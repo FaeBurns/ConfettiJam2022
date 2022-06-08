@@ -17,20 +17,11 @@ namespace BeanLib.References
         /// <inheritdoc/>
         public void Resolve(object hostObject, FieldInfo field)
         {
-            BindComponentAttribute attribte = field.GetCustomAttribute<BindComponentAttribute>();
-
-            // exit if attribute not found
-            // field we're trying to resolve simply doesn't have the attribute and should be ignored
-            if (attribte is null)
-            {
-                return;
-            }
-
             if (hostObject is Component caller)
             {
                 Component component;
 
-                if (attribte.Child)
+                if (Child)
                 {
                     component = caller.GetComponentInChildren(field.FieldType);
                 }

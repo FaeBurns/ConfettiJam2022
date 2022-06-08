@@ -12,15 +12,6 @@ namespace BeanLib.References
         /// <inheritdoc/>
         public void Resolve(object hostObject, FieldInfo field)
         {
-            AutoReferenceAttribute attribte = field.GetCustomAttribute<AutoReferenceAttribute>();
-
-            // exit if attribute not found
-            // field we're trying to resolve simply doesn't have the attribute and should be ignored
-            if (attribte is null)
-            {
-                return;
-            }
-
             // throw if reference not found
             if (!ReferenceStore.ContainsReferenceType(field.FieldType))
             {
