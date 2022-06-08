@@ -32,24 +32,8 @@ namespace BeanLib.References
         /// </summary>
         public void Resolve()
         {
-            AutoReferenceAttribute attribte = field.GetCustomAttribute<AutoReferenceAttribute>();
-
-            // exit if attribute not found
-            // field we're trying to resolve simply doesn't have the attribute and should be ignored
-            if (attribte is null)
-            {
-                return;
-            }
-
-            // throw if reference not found
-            if (!ReferenceStore.ContainsReferenceType(field.FieldType))
-            {
-                throw new ReferenceNotFoundException($"Could not find reference of type {field.FieldType} in the reference store");
-            }
-
-            object reference = ReferenceStore.GetReference(field.FieldType);
-
-            field.SetValue(hostObject, reference);
+            AutoReferenceAttribute.Resolve(hostObject, field);
+            BindComponentAttribute.Resolve(hostObject, field);
         }
     }
 }
