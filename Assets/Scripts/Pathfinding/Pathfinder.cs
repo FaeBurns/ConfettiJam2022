@@ -12,10 +12,13 @@ using UnityEngine.Tilemaps;
 /// </summary>
 public class Pathfinder : MonoBehaviour
 {
-    private readonly Queue<(Vector2Int, Vector2Int, OnPathFoundDelegate)> pathQueue = new Queue<(Vector2Int, Vector2Int, OnPathFoundDelegate)>();
+    private readonly Queue<QueuedPath> queuedPaths = new Queue<QueuedPath>();
 
     private readonly Dictionary<(Vector2Int, Vector2Int), Stack<Vector2>> cachedPaths = new Dictionary<(Vector2Int, Vector2Int), Stack<Vector2>>();
 
+    private readonly Dictionary<GameObject, QueuedPath> referencedQueuedPaths = new Dictionary<GameObject, QueuedPath>();
+
+    private GameObject currentPathCaller = null;
     private AStar currentPath = null;
 
     [SerializeField] private Tilemap tilemap;
@@ -33,8 +36,9 @@ public class Pathfinder : MonoBehaviour
     /// </summary>
     /// <param name="startPos">The start position of the path.</param>
     /// <param name="endPos">The end position of the path.</param>
+    /// <param name="callingObject">The object that called this function. Used to make sure that there aren't any delays in keeping up to date paths.</param>
     /// <param name="onCompleteCallback">Callback to be executed when the path is found.</param>
-    public void FindPath(Vector2 startPos, Vector2 endPos, OnPathFoundDelegate onCompleteCallback)
+    public void FindPath(Vector2 startPos, Vector2 endPos, GameObject callingObject, OnPathFoundDelegate onCompleteCallback)
     {
         Vector2Int startTilePos = AStar.ConvertToTileSpace(startPos);
         Vector2Int endTilePos = AStar.ConvertToTileSpace(endPos);
@@ -48,9 +52,39 @@ public class Pathfinder : MonoBehaviour
             return;
         }
 
-        pathQueue.Enqueue((startTilePos, endTilePos, onCompleteCallback));
+        if (referencedQueuedPaths.ContainsKey(callingObject))
+        {
+            referencedQueuedPaths[callingObject].Cancelled = true;
+        }
+
+        QueuedPath pathInfo = new QueuedPath(startTilePos, endTilePos, callingObject, onCompleteCallback);
+
+        queuedPaths.Enqueue(pathInfo);
+        referencedQueuedPaths[callingObject] = pathInfo;
 
         enabled = true;
+    }
+
+    /// <summary>
+    /// Tries to retrieve a request from the path request collection.
+    /// </summary>
+    /// <param name="requester">The object performing the request.</param>
+    /// <param name="result">The result of the request.</param>
+    /// <returns>True if a request was found, false if not.</returns>
+    public bool TryGetRequest(GameObject requester, out (Vector2Int Start, Vector2Int End) result)
+    {
+        bool tryResult = referencedQueuedPaths.TryGetValue(requester, out QueuedPath foundValue);
+
+        if (tryResult)
+        {
+            result = (foundValue.StartPos, foundValue.EndPos);
+        }
+        else
+        {
+            result = (Vector2Int.zero, Vector2Int.zero);
+        }
+
+        return tryResult;
     }
 
     private void Awake()
@@ -67,35 +101,59 @@ public class Pathfinder : MonoBehaviour
 
         if (currentPath != null && currentPath.FinishedCalculating)
         {
-            // get queue element
-            (Vector2Int, Vector2Int, OnPathFoundDelegate) queuedResult = pathQueue.Dequeue();
-
-            // cache path
-            CachePath(queuedResult.Item1, queuedResult.Item2, currentPath.Path);
-
-            // invoke callback
-            queuedResult.Item3?.Invoke(currentPath.Path);
-
-            // reset path to null
-            currentPath = null;
+            PathFinished();
         }
+    }
+
+    private void PathFinished()
+    {
+        // get value
+        QueuedPath path = queuedPaths.Dequeue();
+
+        // cache path
+        CachePath(path.StartPos, path.EndPos, currentPath.Path);
+
+        // invoke callback
+        path.Callback?.Invoke(currentPath.Path);
+
+        // reset path to null
+        currentPath = null;
+
+        // remove path from dictionary
+        referencedQueuedPaths.Remove(currentPathCaller);
+        currentPathCaller = null;
     }
 
     private void BeginNewPath()
     {
-        enabled = false;
-        if (pathQueue.Count > 0)
+        if (queuedPaths.Count > 0)
         {
             enabled = true;
 
-            // peek at current queue element
-            (Vector2Int, Vector2Int, OnPathFoundDelegate) peekedQueueElement = pathQueue.Peek();
+            // peek at first
+            QueuedPath path = queuedPaths.Peek();
+
+            while (path.Cancelled)
+            {
+                // skip current peek
+                queuedPaths.Dequeue();
+
+                // peek at next
+                path = queuedPaths.Peek();
+            }
 
             // create new path instance
-            currentPath = new AStar(tilemap, peekedQueueElement.Item1, peekedQueueElement.Item2);
+            currentPath = new AStar(tilemap, path.StartPos, path.EndPos);
+
+            // set known caller
+            currentPathCaller = path.Caller;
 
             // begin calculation
             StartCoroutine(currentPath.RunAlgorithmEnumerated(maxStepsPerEnumeratedAlgorithmCycle));
+        }
+        else
+        {
+            enabled = false;
         }
     }
 

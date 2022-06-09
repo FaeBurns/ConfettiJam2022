@@ -6,6 +6,7 @@ using UnityEngine;
 /// Component responsible for handling the player's movement.
 /// </summary>
 [RequireComponent(typeof(Rigidbody2D))]
+[RequireComponent(typeof(PlayerPositionReporter))]
 public class PlayerMovement : ReferenceResolvedBehaviour
 {
     private Vector2 velToMove;

@@ -85,8 +85,8 @@ public class HourglassAnimator : ReferenceResolvedBehaviour
     /// </summary>
     public void ANIMFUNC_Shake()
     {
-        float shakeX = UnityEngine.Random.value * shakeScale;
-        float shakeY = UnityEngine.Random.value * shakeScale;
+        float shakeX = Random.value * shakeScale;
+        float shakeY = Random.value * shakeScale;
         shakeTransform.anchoredPosition = new Vector2(shakeX, shakeY);
     }
 

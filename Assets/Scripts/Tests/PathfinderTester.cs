@@ -42,7 +42,7 @@ public class PathfinderTester : ReferenceResolvedBehaviour
         Vector2 startPos = GetRandomPositionInArea();
         Vector2 endPos = GetRandomPositionInArea();
 
-        pathfinder.FindPath(startPos, endPos, DisplayPath);
+        pathfinder.FindPath(startPos, endPos, gameObject, DisplayPath);
     }
 
     private Vector2 GetRandomPositionInArea()
