@@ -16,12 +16,6 @@ namespace BeanLib.References
         /// </summary>
         public bool Child { get; set; }
 
-        private static T[] Convert<T>(Component[] components)
-            where T : Component
-        {
-            return Array.ConvertAll(components, (component) => (T)component);
-        }
-
         /// <inheritdoc/>
         public void Resolve(object hostObject, FieldInfo field)
         {
@@ -44,6 +38,12 @@ namespace BeanLib.References
 
                 field.SetValue(hostObject, result);
             }
+        }
+
+        private static T[] Convert<T>(Component[] components)
+            where T : Component
+        {
+            return Array.ConvertAll(components, (component) => (T)component);
         }
 
         private object[] CastToType(Component[] components, Type targetType)

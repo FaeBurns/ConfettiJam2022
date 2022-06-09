@@ -1,0 +1,124 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using BeanLib.References;
+using UnityEngine;
+using UnityEngine.Tilemaps;
+
+/// <summary>
+/// Component responsible for scheduling and running pathfinding tasks.
+/// </summary>
+public class Pathfinder : MonoBehaviour
+{
+    private readonly Queue<(Vector2Int, Vector2Int, OnPathFoundDelegate)> pathQueue = new Queue<(Vector2Int, Vector2Int, OnPathFoundDelegate)>();
+
+    private readonly Dictionary<(Vector2Int, Vector2Int), Stack<Vector2>> cachedPaths = new Dictionary<(Vector2Int, Vector2Int), Stack<Vector2>>();
+
+    private AStar currentPath = null;
+
+    [SerializeField] private Tilemap tilemap;
+    [SerializeField] private int maxStepsPerEnumeratedAlgorithmCycle = 200;
+    [SerializeField] private int maxCachedPaths = 200;
+
+    /// <summary>
+    /// Delegate definition for path completion.
+    /// </summary>
+    /// <param name="path">The found path.</param>
+    public delegate void OnPathFoundDelegate(Stack<Vector2> path);
+
+    /// <summary>
+    /// Adds the desired path to the pathfinding queue.
+    /// </summary>
+    /// <param name="startPos">The start position of the path.</param>
+    /// <param name="endPos">The end position of the path.</param>
+    /// <param name="onCompleteCallback">Callback to be executed when the path is found.</param>
+    public void FindPath(Vector2 startPos, Vector2 endPos, OnPathFoundDelegate onCompleteCallback)
+    {
+        Vector2Int startTilePos = AStar.ConvertToTileSpace(startPos);
+        Vector2Int endTilePos = AStar.ConvertToTileSpace(endPos);
+
+        if (cachedPaths.TryGetValue((startTilePos, endTilePos), out Stack<Vector2> result))
+        {
+            // run callback delegate
+            onCompleteCallback(result);
+
+            // exit
+            return;
+        }
+
+        pathQueue.Enqueue((startTilePos, endTilePos, onCompleteCallback));
+
+        enabled = true;
+    }
+
+    private void Awake()
+    {
+        ReferenceStore.ReplaceReference(this);
+    }
+
+    private void Update()
+    {
+        if (currentPath is null)
+        {
+            BeginNewPath();
+        }
+
+        if (currentPath != null && currentPath.FinishedCalculating)
+        {
+            // get queue element
+            (Vector2Int, Vector2Int, OnPathFoundDelegate) queuedResult = pathQueue.Dequeue();
+
+            // cache path
+            CachePath(queuedResult.Item1, queuedResult.Item2, currentPath.Path);
+
+            // invoke callback
+            queuedResult.Item3?.Invoke(currentPath.Path);
+
+            // reset path to null
+            currentPath = null;
+        }
+    }
+
+    private void BeginNewPath()
+    {
+        enabled = false;
+        if (pathQueue.Count > 0)
+        {
+            enabled = true;
+
+            // peek at current queue element
+            (Vector2Int, Vector2Int, OnPathFoundDelegate) peekedQueueElement = pathQueue.Peek();
+
+            // create new path instance
+            currentPath = new AStar(tilemap, peekedQueueElement.Item1, peekedQueueElement.Item2);
+
+            // begin calculation
+            StartCoroutine(currentPath.RunAlgorithmEnumerated(maxStepsPerEnumeratedAlgorithmCycle));
+        }
+    }
+
+    private void CachePath(Vector2Int startPos, Vector2Int endPos, Stack<Vector2> path)
+    {
+        // trim if over max cached
+        if (cachedPaths.Count > maxCachedPaths)
+        {
+            // first gets latest object so last might get first object???
+            // no guarantee
+            // this pretty much just gets a random element
+            // might be first
+            // might be last
+            KeyValuePair<(Vector2Int, Vector2Int), Stack<Vector2>> element = cachedPaths.Last();
+
+            // remove found element
+            cachedPaths.Remove(element.Key);
+        }
+
+        // if not cached already
+        if (!cachedPaths.ContainsKey((startPos, endPos)))
+        {
+            cachedPaths.Add((startPos, endPos), path);
+        }
+    }
+}

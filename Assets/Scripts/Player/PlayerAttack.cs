@@ -8,6 +8,8 @@ using UnityEngine;
 public class PlayerAttack : ReferenceResolvedBehaviour
 {
     private float cooldownFinishedTime = 0f;
+
+    [AutoReference] private TimeResourceManager timeManager;
     [BindComponent(Child = true)] private TriggerCountCheck meleeOverlapTrigger = null;
 
     [Header("References")]
@@ -26,6 +28,7 @@ public class PlayerAttack : ReferenceResolvedBehaviour
     [SerializeField] private int rangedPelletCount = 6;
     [SerializeField] private float rangedMaxDistance = 5f;
     [SerializeField] private float rangedSpread = 5f;
+    [SerializeField] private float rangedTimeCost = 1f;
 
     private void Update()
     {
@@ -105,5 +108,7 @@ public class PlayerAttack : ReferenceResolvedBehaviour
         }
 
         cooldownFinishedTime = Time.time + rangedCooldown;
+
+        timeManager.Drain(rangedTimeCost);
     }
 }
