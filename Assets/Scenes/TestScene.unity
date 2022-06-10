@@ -1122,6 +1122,7 @@ GameObject:
   - component: {fileID: 471149494}
   - component: {fileID: 471149496}
   - component: {fileID: 471149495}
+  - component: {fileID: 471149497}
   m_Layer: 0
   m_Name: Tilemap
   m_TagString: Untagged
@@ -9622,6 +9623,20 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!114 &471149497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 471149493}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e614cdd2abc42341bd324443b6071b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  components:
+  - {fileID: 471149496}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -10272,7 +10287,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 4
-  repathDistance: 1
+  repathTime: 0.3
 --- !u!50 &1238962814
 Rigidbody2D:
   serializedVersion: 4
@@ -10398,8 +10413,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tilemap: {fileID: 471149496}
-  maxStepsPerEnumeratedAlgorithmCycle: 200
   maxCachedPaths: 200
+  noPathsSleepTime: 100
 --- !u!114 &1440997251
 MonoBehaviour:
   m_ObjectHideFlags: 0

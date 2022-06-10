@@ -9,7 +9,7 @@ using UnityEngine.Tilemaps;
 /// </summary>
 public class AStar
 {
-    private readonly Tilemap tilemap;
+    private readonly Dictionary<Vector2Int, AStarTile> tilemap;
 
     private readonly HashSet<Node> openList;
     private readonly HashSet<Node> closedList;
@@ -27,7 +27,7 @@ public class AStar
     /// <param name="tilemap">The tilemap to perform the pathfind on.</param>
     /// <param name="startPos">The start position of the path.</param>
     /// <param name="endPos">The end position of the path.</param>
-    public AStar(Tilemap tilemap, Vector2 startPos, Vector2 endPos)
+    public AStar(Dictionary<Vector2Int, AStarTile> tilemap, Vector2 startPos, Vector2 endPos)
     {
         this.tilemap = tilemap;
 
@@ -52,7 +52,7 @@ public class AStar
     /// <param name="tilemap">The tilemap to perform the pathfind on.</param>
     /// <param name="startPos">The start position of the path.</param>
     /// <param name="endPos">The end position of the path.</param>
-    public AStar(Tilemap tilemap, Vector2Int startPos, Vector2Int endPos)
+    public AStar(Dictionary<Vector2Int, AStarTile> tilemap, Vector2Int startPos, Vector2Int endPos)
     {
         this.tilemap = tilemap;
 
@@ -152,11 +152,10 @@ public class AStar
                 if (y != 0 || x != 0)
                 {
                     // get neighbor position
-                    Vector3Int tileNeighborPosition = new Vector3Int(parentPosition.x - x, parentPosition.y - y, 0);
                     Vector2Int neighborPosition = new Vector2Int(parentPosition.x - x, parentPosition.y - y);
 
                     // get tile
-                    AStarTile tile = tilemap.GetTile<AStarTile>(tileNeighborPosition);
+                    AStarTile tile = GetTile(neighborPosition);
 
                     if (neighborPosition != startPos && tile && !tile.blocking)
                     {
@@ -258,11 +257,11 @@ public class AStar
     {
         Vector2Int direction = current.Position - neighbor.Position;
 
-        Vector3Int first = new Vector3Int(current.Position.x + (direction.x * -1), current.Position.y, 0);
-        Vector3Int second = new Vector3Int(current.Position.x, current.Position.y + (direction.y * -1), 0);
+        Vector2Int first = new Vector2Int(current.Position.x + (direction.x * -1), current.Position.y);
+        Vector2Int second = new Vector2Int(current.Position.x, current.Position.y + (direction.y * -1));
 
-        AStarTile firstTile = tilemap.GetTile<AStarTile>(first);
-        AStarTile secondTile = tilemap.GetTile<AStarTile>(second);
+        AStarTile firstTile = GetTile(first);
+        AStarTile secondTile = GetTile(second);
 
         return !((firstTile != null && firstTile.blocking) || (secondTile != null && secondTile.blocking));
     }
@@ -284,6 +283,15 @@ public class AStar
             return finalPath;
         }
 
+        return null;
+    }
+
+    private AStarTile GetTile(Vector2Int position)
+    {
+        if (tilemap.TryGetValue(position, out AStarTile result))
+        {
+            return result;
+        }
         return null;
     }
 }

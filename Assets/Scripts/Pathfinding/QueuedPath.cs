@@ -21,7 +21,7 @@ public class QueuedPath
     {
         StartPos = startPos;
         EndPos = endPos;
-        Caller = caller;
+        CallerID = caller.GetInstanceID();
         Callback = callback;
     }
 
@@ -29,7 +29,7 @@ public class QueuedPath
 
     public Vector2Int EndPos { get; private set; }
 
-    public GameObject Caller { get; private set; }
+    public int CallerID { get; private set; }
 
     public Pathfinder.OnPathFoundDelegate Callback { get; private set; }
 

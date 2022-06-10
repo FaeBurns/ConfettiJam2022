@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace BeanLib.References
 {
@@ -33,7 +34,7 @@ namespace BeanLib.References
         /// </summary>
         /// <typeparam name="T">The type to replace.</typeparam>
         /// <param name="reference">The object to register.</param>
-        public static void ReplaceReference<T>(T reference)
+        public static void ReplaceReference<T>(T reference) where T : Component
         {
             Type referenceType = reference.GetType();
 
