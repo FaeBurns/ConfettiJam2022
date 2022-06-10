@@ -9,18 +9,22 @@ using UnityEngine;
 /// </summary>
 [RequireComponent(typeof(Damageable))]
 [RequireComponent(typeof(Rigidbody2D))]
-public class EnemyBase : ReferenceResolvedBehaviour
+[RequireComponent(typeof(TriggerCountCheck))]
+public abstract class EnemyBase : ReferenceResolvedBehaviour
 {
     private float scheduledRepathTime = 0f;
     private EnemyPathData? pathData;
-    private PlayerPositionReporter targetPlayer;
-
-    [AutoReference] private Pathfinder pathfinder;
-    [BindComponent] private Rigidbody2D rb;
+    private PlayerPositionReporter targetPlayerPositionReporter;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 1f;
     [SerializeField] private float repathTime = 1f;
+
+    [AutoReference] protected Pathfinder pathfinder;
+    [BindComponent] protected Rigidbody2D rb;
+    [BindComponent] protected TriggerCountCheck triggerCountCheck;
+
+    protected GameObject TargetPlayer { get => targetPlayerPositionReporter.gameObject; set => targetPlayerPositionReporter = value.GetComponent<PlayerPositionReporter>(); }
 
     /// <summary>
     /// Moves the enemy to the target position.
@@ -34,9 +38,9 @@ public class EnemyBase : ReferenceResolvedBehaviour
     /// <summary>
     /// Called when the player exits the detection range.
     /// </summary>
-    public virtual void OnPlayerExitDetectionRange()
+    public virtual void OnPlayerExitDetectionRange(GameObject playerObject)
     {
-        targetPlayer = null;
+        targetPlayerPositionReporter = null;
     }
 
     /// <summary>
@@ -45,8 +49,8 @@ public class EnemyBase : ReferenceResolvedBehaviour
     /// <param name="playerObject">The player.</param>
     public virtual void OnPlayerEnterDetectionRange(GameObject playerObject)
     {
-        targetPlayer = playerObject.GetComponent<PlayerPositionReporter>();
-        MoveToPosition(targetPlayer.transform.position);
+        targetPlayerPositionReporter = playerObject.GetComponent<PlayerPositionReporter>();
+        MoveToPosition(targetPlayerPositionReporter.transform.position);
     }
 
     /// <inheritdoc/>
@@ -54,8 +58,11 @@ public class EnemyBase : ReferenceResolvedBehaviour
     {
         base.Start();
 
-        OnPlayerEnterDetectionRange(FindObjectOfType<PlayerMovement>().gameObject);
+        triggerCountCheck.OnObjectEntry += OnPlayerEnterDetectionRange;
+        triggerCountCheck.OnObjectExit += OnPlayerExitDetectionRange;
     }
+
+    protected virtual void OnPathFinished() { }
 
     private void BeginPath(Stack<Vector2> path, Vector2 endPos)
     {
@@ -83,7 +90,12 @@ public class EnemyBase : ReferenceResolvedBehaviour
         scheduledRepathTime = Time.time + repathTime;
     }
 
-    private void Update()
+    protected virtual void Update()
+    {
+        DrawPathDebug();
+    }
+
+    private void DrawPathDebug()
     {
         if (pathData != null)
         {
@@ -97,7 +109,7 @@ public class EnemyBase : ReferenceResolvedBehaviour
         }
     }
 
-    private void FixedUpdate()
+    protected void FollowPath()
     {
         // exit if there is no path to follow
         if (this.pathData is null)
@@ -124,16 +136,16 @@ public class EnemyBase : ReferenceResolvedBehaviour
             if (pathfinder.TryGetRequest(gameObject, out (Vector2Int Start, Vector2Int End) result))
             {
                 // if the path does not end up at the same position a recalculation would end up at
-                if (result.End != AStar.ConvertToTileSpace(targetPlayer.ValidPathPosition))
+                if (result.End != AStar.ConvertToTileSpace(targetPlayerPositionReporter.ValidPathPosition))
                 {
                     // requested path is not ideal, request one
-                    MoveToPosition(targetPlayer.ValidPathPosition);
+                    MoveToPosition(targetPlayerPositionReporter.ValidPathPosition);
                 }
             }
             else
             {
                 // no request path found, request one
-                MoveToPosition(targetPlayer.ValidPathPosition);
+                MoveToPosition(targetPlayerPositionReporter.ValidPathPosition);
             }
         }
 
@@ -151,6 +163,15 @@ public class EnemyBase : ReferenceResolvedBehaviour
         {
             // pop the node off the stack
             pathData.Path.Pop();
+
+            // if there are no more nodes left
+            if (pathData.Path.Count == 0)
+            {
+                // clear path data
+                this.pathData = null;
+
+                OnPathFinished();
+            }
         }
     }
 

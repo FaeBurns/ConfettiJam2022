@@ -42,7 +42,9 @@ public class PathfinderTester : ReferenceResolvedBehaviour
         Vector2 startPos = GetRandomPositionInArea();
         Vector2 endPos = GetRandomPositionInArea();
 
-        pathfinder.FindPath(startPos, endPos, gameObject, DisplayPath);
+        GameObject tempObj = new GameObject("killme");
+        pathfinder.FindPath(startPos, endPos, tempObj, DisplayPath);
+        Destroy(tempObj);
     }
 
     private Vector2 GetRandomPositionInArea()

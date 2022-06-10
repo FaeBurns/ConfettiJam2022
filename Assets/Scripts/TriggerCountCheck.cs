@@ -11,47 +11,85 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class TriggerCountCheck : MonoBehaviour
 {
-    private readonly HashSet<Collider2D> colliders = new HashSet<Collider2D>();
-    private readonly HashSet<GameObject> objects = new HashSet<GameObject>();
+    private readonly Dictionary<Collider2D, int> colliders = new Dictionary<Collider2D, int>();
+    private readonly Dictionary<GameObject, int> objects = new Dictionary<GameObject, int>();
+    private readonly HashSet<string> whitelist = new HashSet<string>();
+
+    [SerializeField] private string[] tagWhitelist;
+
+    public event Action<Collider2D> OnColliderEntry;
+    public event Action<Collider2D> OnColliderExit;
+    public event Action<GameObject> OnObjectEntry;
+    public event Action<GameObject> OnObjectExit;
 
     /// <summary>
     /// Gets a collection of all the colliders present in the trigger.
     /// </summary>
-    public IEnumerable<Collider2D> Colliders { get => colliders; }
+    public IEnumerable<Collider2D> Colliders { get => colliders.Keys; }
 
     /// <summary>
     /// Gets a collection of all the objects present in the trigger.
     /// </summary>
-    public IEnumerable<GameObject> Objects { get => objects; }
+    public IEnumerable<GameObject> Objects { get => objects.Keys; }
 
     private void Start()
     {
-        GetComponent<Collider2D>().isTrigger = true;
+        for (int i = 0; i < tagWhitelist.Length; i++)
+        {
+            whitelist.Add(tagWhitelist[i]);
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!Colliders.Contains(collision))
+        if (!tagWhitelist.Contains(collision.tag))
         {
-            colliders.Add(collision);
+            return;
         }
 
-        if (!Objects.Contains(collision.gameObject))
+        if (colliders.ContainsKey(collision))
         {
-            objects.Add(collision.gameObject);
+            colliders[collision]++;
+        }
+        else
+        {
+            colliders[collision] = 1;
+            OnColliderEntry?.Invoke(collision);
+        }
+
+        if (objects.ContainsKey(collision.gameObject))
+        {
+            objects[collision.gameObject]++;
+        }
+        else
+        {
+            objects[collision.gameObject] = 1;
+            OnObjectEntry?.Invoke(collision.gameObject);
         }
     }
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (Colliders.Contains(collision))
+        if (colliders.ContainsKey(collision))
         {
-            colliders.Remove(collision);
+            colliders[collision]--;
+
+            if (colliders[collision] == 0)
+            {
+                colliders.Remove(collision);
+                OnColliderExit?.Invoke(collision);
+            }
         }
 
-        if (Objects.Contains(collision.gameObject))
+        if (objects.ContainsKey(collision.gameObject))
         {
-            objects.Remove(collision.gameObject);
+            objects[collision.gameObject]--;
+
+            if (objects[collision.gameObject] == 0)
+            {
+                objects.Remove(collision.gameObject);
+                OnObjectExit?.Invoke(collision.gameObject);
+            }
         }
     }
 }
