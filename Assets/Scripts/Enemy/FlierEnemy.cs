@@ -61,6 +61,15 @@ public class FlierEnemy : EnemyBase
     {
         base.OnPathFinished();
         State = EnemyState.Idle;
+
+        manualVel = Vector2.zero;
+    }
+
+    /// <inheritdoc/>
+    protected override void NoPath()
+    {
+        base.NoPath();
+        OnPathFinished();
     }
 
     /// <inheritdoc/>
@@ -88,6 +97,9 @@ public class FlierEnemy : EnemyBase
             case EnemyState.WindDown:
             case EnemyState.Attack:
                 Rb.MovePosition(Rb.position + manualVel);
+                break;
+            case EnemyState.Idle:
+                Rb.MovePosition(Rb.position);
                 break;
         }
     }

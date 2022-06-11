@@ -111,7 +111,7 @@ public class PlayerAttack : ReferenceResolvedBehaviour
             // was anything actually hit
             if (hit.collider != null)
             {
-                Damageable damageable = hit.collider.gameObject.GetComponent<Damageable>();
+                Damageable damageable = hit.collider.gameObject.GetComponentInParent<Damageable>();
                 if (damageable != null)
                 {
                     damageable.DealDamage(rangedPelletDamage);

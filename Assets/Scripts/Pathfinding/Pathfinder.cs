@@ -21,7 +21,7 @@ public class Pathfinder : MonoBehaviour
 
     private readonly Dictionary<Vector2Int, AStarTile> threadSafeTiles = new Dictionary<Vector2Int, AStarTile>();
 
-    private readonly ConcurrentQueue<(OnPathFoundDelegate Callback, Stack<Vector2> Argument)> completedPathsQueue = new ConcurrentQueue<(OnPathFoundDelegate Callback, Stack<Vector2> Argument)>();
+    private readonly ConcurrentQueue<(QueuedPath PathInfo, Stack<Vector2> Path)> completedPathsQueue = new ConcurrentQueue<(QueuedPath PathInfo, Stack<Vector2> Path)>();
 
     private AStar currentPath = null;
 
@@ -70,6 +70,18 @@ public class Pathfinder : MonoBehaviour
     }
 
     /// <summary>
+    /// Cancels all pending paths for this object.
+    /// </summary>
+    /// <param name="caller">The caller requesting the cancel.</param>
+    public void CancelObject(GameObject caller)
+    {
+        if (latestQueuedPaths.ContainsKey(caller.GetInstanceID()))
+        {
+            latestQueuedPaths[caller.GetInstanceID()].Cancelled = true;
+        }
+    }
+
+    /// <summary>
     /// Tries to retrieve a request from the path request collection.
     /// </summary>
     /// <param name="requester">The object performing the request.</param>
@@ -104,9 +116,12 @@ public class Pathfinder : MonoBehaviour
     {
         while (completedPathsQueue.Count > 0)
         {
-            if (completedPathsQueue.TryDequeue(out (OnPathFoundDelegate Callback, Stack<Vector2> Args) result))
+            if (completedPathsQueue.TryDequeue(out (QueuedPath PathInfo, Stack<Vector2> Path) result))
             {
-                result.Callback?.Invoke(result.Args);
+                if (!result.PathInfo.Cancelled)
+                {
+                    result.PathInfo.Callback?.Invoke(result.Path);
+                }
             }
         }
     }
@@ -149,7 +164,7 @@ public class Pathfinder : MonoBehaviour
             CachePath(path.StartPos, path.EndPos, currentPath.Path);
 
             // invoke callback
-            completedPathsQueue.Enqueue((path.Callback, currentPath.Path));
+            completedPathsQueue.Enqueue((path, currentPath.Path));
 
             // reset path to null
             currentPath = null;

@@ -38,7 +38,16 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     /// </summary>
     protected GameObject TargetPlayer
     {
-        get => targetPlayerPositionReporter.gameObject;
+        get
+        {
+            if (targetPlayerPositionReporter != null)
+            {
+                return targetPlayerPositionReporter.gameObject;
+            }
+
+            return null;
+        }
+
         set
         {
             if (value != null)
@@ -100,12 +109,19 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
 
         TriggerCountCheck.OnObjectEntry += OnPlayerEnterDetectionRange;
         TriggerCountCheck.OnObjectExit += OnPlayerExitDetectionRange;
+
+        GetComponent<Damageable>().OnDeath += OnDeath;
     }
 
     /// <summary>
     /// Called when the path has finished calculating.
     /// </summary>
     protected virtual void OnPathFinished() { }
+
+    /// <summary>
+    /// Called when there is no path to follow.
+    /// </summary>
+    protected virtual void NoPath() { }
 
     /// <summary>
     /// Unity Update Message.
@@ -122,7 +138,7 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     protected void FollowPath()
     {
         // exit if there is no path to follow
-        if (this.pathData is null)
+        if (!this.pathData.HasValue)
         {
             return;
         }
@@ -146,7 +162,7 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
             if (Pathfinder.TryGetRequest(gameObject, out (Vector2Int Start, Vector2Int End) result))
             {
                 // if the path does not end up at the same position a recalculation would end up at
-                if (result.End != AStar.ConvertToTileSpace(targetPlayerPositionReporter.ValidPathPosition))
+                if (result.End != AStar.ConvertToTileSpace(LastPlayerPosition))
                 {
                     // requested path is not ideal, request one
                     MoveToPosition(LastPlayerPosition);
@@ -190,6 +206,7 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
         if (path == null)
         {
             Debug.Log("Enemy path was null");
+            NoPath();
             return;
         }
 
@@ -277,5 +294,11 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
 
         // return highest index
         return Mathf.Max(closestNodeIndex, secondClosestNodeIndex);
+    }
+
+    private void OnDeath()
+    {
+        Pathfinder.CancelObject(gameObject);
+        Destroy(gameObject);
     }
 }
