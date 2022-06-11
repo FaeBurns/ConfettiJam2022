@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -8,7 +7,7 @@ namespace BeanLib.References
     /// <summary>
     /// Injects a unity component into a field.
     /// </summary>
-    [System.AttributeUsage(System.AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    [System.AttributeUsage(System.AttributeTargets.Field | System.AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     public sealed class BindMultiComponentAttribute : System.Attribute, IResolver
     {
         /// <summary>
@@ -17,13 +16,13 @@ namespace BeanLib.References
         public bool Child { get; set; }
 
         /// <inheritdoc/>
-        public void Resolve(object hostObject, FieldInfo field)
+        public void Resolve(object hostObject, MemberInfo member)
         {
             if (hostObject is Component caller)
             {
                 Component[] components;
 
-                Type collectionType = ReflectionUtility.GetCollectionElementType(field.FieldType);
+                Type collectionType = ResolverUtility.GetCollectionElementType(member);
 
                 if (Child)
                 {
@@ -36,7 +35,7 @@ namespace BeanLib.References
 
                 object[] result = CastToType(components, collectionType);
 
-                field.SetValue(hostObject, result);
+                ResolverUtility.SetMemberValue(hostObject, result, member);
             }
         }
 

@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using UnityEngine;
-
-
-public enum EnemyState
+﻿public enum EnemyState
 {
     Idle,
     FollowPath,

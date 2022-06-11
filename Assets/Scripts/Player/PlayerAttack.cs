@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using BeanLib.References;
+﻿using BeanLib.References;
 using UnityEngine;
 
 /// <summary>
@@ -28,7 +27,16 @@ public class PlayerAttack : ReferenceResolvedBehaviour
     [SerializeField] private int rangedPelletCount = 6;
     [SerializeField] private float rangedMaxDistance = 5f;
     [SerializeField] private float rangedSpread = 5f;
+    [SerializeField] private float rangedSpreadDeviation = 1f;
     [SerializeField] private float rangedTimeCost = 1f;
+
+    [Header("Animation")]
+    [SerializeField] private Animator meleeAnimator;
+    [SerializeField] private string[] attackAnimationLayerNames;
+    [SerializeField] private GameObject pelletAnimationPrefab;
+    [SerializeField] private float pelletAnimationLifetime = 0.5f;
+    [SerializeField] private float pelletAnimationSpeed = 2f;
+    [SerializeField] private Transform shotgunOrigin;
 
     private void Update()
     {
@@ -59,6 +67,10 @@ public class PlayerAttack : ReferenceResolvedBehaviour
             return;
         }
 
+        string layerName = attackAnimationLayerNames[Mathf.RoundToInt(Random.value * (attackAnimationLayerNames.Length - 1))];
+
+        meleeAnimator.PlayInFixedTime(layerName, -1, 0);
+
         foreach (GameObject collidingObject in meleeOverlapTrigger.Objects)
         {
             Damageable damageable = collidingObject.GetComponent<Damageable>();
@@ -87,10 +99,14 @@ public class PlayerAttack : ReferenceResolvedBehaviour
         {
             float angle = (targetAngle - ((i - halfPelletCount) * individualSpread)) - (individualSpread / 2f);
 
+            float deviation = rangedSpreadDeviation * ((Random.value * 2) - 1);
+
+            angle += deviation;
+
             // use Vector3.right here as we're using 2d where up is forwards
             Vector3 forwardsVector = Quaternion.Euler(0, 0, angle) * Vector3.right;
 
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, forwardsVector, rangedMaxDistance, attackLayer);
+            RaycastHit2D hit = Physics2D.Raycast(shotgunOrigin.position, forwardsVector, rangedMaxDistance, attackLayer);
 
             // was anything actually hit
             if (hit.collider != null)
@@ -100,11 +116,14 @@ public class PlayerAttack : ReferenceResolvedBehaviour
                 {
                     damageable.DealDamage(rangedPelletDamage);
                 }
-
-                Debug.DrawLine(transform.position, hit.point, Color.green, 0.25f);
             }
 
-            Debug.DrawLine(transform.position, transform.position + (forwardsVector * rangedMaxDistance), Color.red, 0.25f);
+            GameObject pelletObject = Instantiate(pelletAnimationPrefab, shotgunOrigin.position, Quaternion.identity);
+            ShotgunPelletMovement pelletMover = pelletObject.GetComponent<ShotgunPelletMovement>();
+
+            pelletMover.Velocity = forwardsVector * pelletAnimationSpeed;
+
+            Destroy(pelletObject, pelletAnimationLifetime);
         }
 
         cooldownFinishedTime = Time.time + rangedCooldown;

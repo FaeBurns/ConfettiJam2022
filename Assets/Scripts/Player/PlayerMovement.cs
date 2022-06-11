@@ -25,6 +25,7 @@ public class PlayerMovement : ReferenceResolvedBehaviour
     [SerializeField] private float dashSpeed = 1f;
     [SerializeField] private float dashTime = 0.5f;
     [SerializeField] private float timeCost = 1f;
+    [SerializeField] private float velDrain = 0.95f;
 
     private PlayerMovementState MovementState
     {
@@ -33,32 +34,41 @@ public class PlayerMovement : ReferenceResolvedBehaviour
         {
             if (movementState != value)
             {
-                movementState = value;
-
                 // only show trail when dashing
-                trailRenderers.Execute((trail) => trail.emitting = movementState == PlayerMovementState.Dash);
+                trailRenderers.Execute((trail) => trail.emitting = value == PlayerMovementState.Dash);
+
+                // switch on old state
+                switch (movementState)
+                {
+                    case PlayerMovementState.Dash:
+                        velToMove /= dashSpeed;
+                        velToMove *= speed;
+                        break;
+                }
+
+                movementState = value;
             }
         }
     }
 
     private void Update()
     {
-        // get both forms of input
-        Vector2 input = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         Vector2 rawInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
         if (MovementState == PlayerMovementState.Normal)
         {
-            // normalize but keep magnitude - stops the player from moving faster when moving diagonally
-            velToMove = Mathf.Min(input.magnitude, 1) * input.normalized;
+            velToMove += 0.1f * speed * rawInput.normalized;
+            velToMove = Mathf.Min(velToMove.magnitude, 1) * velToMove.normalized;
 
             // if there is any input at all
             if (rawInput.sqrMagnitude > 0f)
             {
-                velToMove = rawInput.normalized;
+                velToMove = rawInput.normalized * speed;
             }
-
-            velToMove *= speed;
+            else
+            {
+                velToMove *= velDrain;
+            }
         }
 
         if (Input.GetButtonDown("Dash") && MovementState == PlayerMovementState.Normal)

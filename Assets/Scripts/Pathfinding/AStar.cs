@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 /// <summary>
 /// Class responsible for finding a path between two locations.
@@ -292,6 +291,7 @@ public class AStar
         {
             return result;
         }
+
         return null;
     }
 }

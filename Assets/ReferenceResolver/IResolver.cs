@@ -12,6 +12,6 @@ namespace BeanLib.References
         /// </summary>
         /// <param name="hostObject">The object containing the field.</param>
         /// <param name="field">The field that requires the reference.</param>
-        public void Resolve(object hostObject, FieldInfo field);
+        public void Resolve(object hostObject, MemberInfo field);
     }
 }

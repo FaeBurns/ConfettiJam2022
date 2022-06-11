@@ -6,7 +6,7 @@ namespace BeanLib.References
     /// <summary>
     /// Injects a unity component into a field.
     /// </summary>
-    [System.AttributeUsage(System.AttributeTargets.Field, Inherited = false, AllowMultiple = false)]
+    [System.AttributeUsage(System.AttributeTargets.Field | System.AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     public sealed class BindComponentAttribute : System.Attribute, IResolver
     {
         /// <summary>
@@ -15,7 +15,7 @@ namespace BeanLib.References
         public bool Child { get; set; }
 
         /// <inheritdoc/>
-        public void Resolve(object hostObject, FieldInfo field)
+        public void Resolve(object hostObject, MemberInfo member)
         {
             if (hostObject is Component caller)
             {
@@ -23,14 +23,14 @@ namespace BeanLib.References
 
                 if (Child)
                 {
-                    component = caller.GetComponentInChildren(field.FieldType);
+                    component = caller.GetComponentInChildren(ResolverUtility.GetMemberType(member));
                 }
                 else
                 {
-                    component = caller.GetComponent(field.FieldType);
+                    component = caller.GetComponent(ResolverUtility.GetMemberType(member));
                 }
 
-                field.SetValue(hostObject, component);
+                ResolverUtility.SetMemberValue(hostObject, component, member);
             }
         }
     }

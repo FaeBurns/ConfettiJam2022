@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace BeanLib.References
 {
-    /// <summary>
-    /// https://www.codeproject.com/Tips/5267157/How-to-Get-a-Collection-Element-Type-Using-Reflect.
-    /// </summary>
-    internal static class ReflectionUtility
+    internal static class ResolverUtility
     {
         /// <summary>
         /// Retrieves the collection element type from this type.
+        /// https://www.codeproject.com/Tips/5267157/How-to-Get-a-Collection-Element-Type-Using-Reflect.
         /// </summary>
         /// <param name="type">The type to query.</param>
         /// <returns>The element type of the collection or null if the type was not a collection.
@@ -80,6 +79,34 @@ namespace BeanLib.References
             }
 
             return null;
+        }
+
+        public static Type GetCollectionElementType(MemberInfo member)
+        {
+            return GetCollectionElementType(GetMemberType(member));
+        }
+
+        public static Type GetMemberType(MemberInfo member)
+        {
+            return member.MemberType switch
+            {
+                MemberTypes.Field => ((FieldInfo)member).FieldType,
+                MemberTypes.Property => ((PropertyInfo)member).PropertyType,
+                _ => throw new ArgumentException($"Input {typeof(MemberInfo)} must be of type {typeof(FieldInfo)} or {typeof(PropertyInfo)}. A type of {member.MemberType} is not valid", nameof(member)),
+            };
+        }
+
+        public static void SetMemberValue(object target, object value, MemberInfo member)
+        {
+            switch (member.MemberType)
+            {
+                case MemberTypes.Property:
+                    ((PropertyInfo)member).SetValue(target, value);
+                    break;
+                case MemberTypes.Field:
+                    ((FieldInfo)member).SetValue(target, value);
+                    break;
+            }
         }
     }
 }

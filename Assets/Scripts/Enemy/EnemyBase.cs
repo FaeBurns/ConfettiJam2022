@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using BeanLib.References;
 using UnityEngine;
 
@@ -9,9 +7,9 @@ using UnityEngine;
 /// </summary>
 [RequireComponent(typeof(Damageable))]
 [RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(TriggerCountCheck))]
 public abstract class EnemyBase : ReferenceResolvedBehaviour
 {
+    private Vector2 cachedLastPlayerPosition = Vector2.zero;
     private float scheduledRepathTime = 0f;
     private EnemyPathData? pathData;
     private PlayerPositionReporter targetPlayerPositionReporter;
@@ -20,11 +18,52 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     [SerializeField] private float moveSpeed = 1f;
     [SerializeField] private float repathTime = 1f;
 
-    [AutoReference] protected Pathfinder pathfinder;
-    [BindComponent] protected Rigidbody2D rb;
-    [BindComponent] protected TriggerCountCheck triggerCountCheck;
+    /// <summary>
+    /// Gets or Sets the <see cref="global::Pathfinder"/> component reference.
+    /// </summary>
+    [AutoReference] protected Pathfinder Pathfinder { get; set; }
 
-    protected GameObject TargetPlayer { get => targetPlayerPositionReporter.gameObject; set => targetPlayerPositionReporter = value.GetComponent<PlayerPositionReporter>(); }
+    /// <summary>
+    /// Gets or Sets the <see cref="Rigidbody2D"/> component reference.
+    /// </summary>
+    [BindComponent] protected Rigidbody2D Rb { get; set; }
+
+    /// <summary>
+    /// Gets or Sets the <see cref="global::TriggerCountCheck"/> component reference.
+    /// </summary>
+    [BindComponent(Child = true)] protected TriggerCountCheck TriggerCountCheck { get; set; }
+
+    /// <summary>
+    /// Gets or Sets the player <see cref="GameObject"/> in targeting range.
+    /// </summary>
+    protected GameObject TargetPlayer
+    {
+        get => targetPlayerPositionReporter.gameObject;
+        set
+        {
+            if (value != null)
+            {
+                targetPlayerPositionReporter = value.GetComponent<PlayerPositionReporter>();
+            }
+            else
+            {
+                targetPlayerPositionReporter = null;
+            }
+        }
+    }
+
+    private Vector2 LastPlayerPosition
+    {
+        get
+        {
+            if (targetPlayerPositionReporter != null)
+            {
+                cachedLastPlayerPosition = targetPlayerPositionReporter.ValidPathPosition;
+            }
+
+            return cachedLastPlayerPosition;
+        }
+    }
 
     /// <summary>
     /// Moves the enemy to the target position.
@@ -32,12 +71,13 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     /// <param name="position">The position to move to.</param>
     public void MoveToPosition(Vector2 position)
     {
-        pathfinder.FindPath(transform.position, position, gameObject, (path) => BeginPath(path, position));
+        Pathfinder.FindPath(transform.position, position, gameObject, (path) => BeginPath(path, position));
     }
 
     /// <summary>
     /// Called when the player exits the detection range.
     /// </summary>
+    /// <param name="playerObject">The player object leaving range.</param>
     public virtual void OnPlayerExitDetectionRange(GameObject playerObject)
     {
         targetPlayerPositionReporter = null;
@@ -46,7 +86,7 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     /// <summary>
     /// Called when the player enters the detection range.
     /// </summary>
-    /// <param name="playerObject">The player.</param>
+    /// <param name="playerObject">The player object entering range.</param>
     public virtual void OnPlayerEnterDetectionRange(GameObject playerObject)
     {
         targetPlayerPositionReporter = playerObject.GetComponent<PlayerPositionReporter>();
@@ -58,11 +98,92 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     {
         base.Start();
 
-        triggerCountCheck.OnObjectEntry += OnPlayerEnterDetectionRange;
-        triggerCountCheck.OnObjectExit += OnPlayerExitDetectionRange;
+        TriggerCountCheck.OnObjectEntry += OnPlayerEnterDetectionRange;
+        TriggerCountCheck.OnObjectExit += OnPlayerExitDetectionRange;
     }
 
+    /// <summary>
+    /// Called when the path has finished calculating.
+    /// </summary>
     protected virtual void OnPathFinished() { }
+
+    /// <summary>
+    /// Unity Update Message.
+    /// </summary>
+    protected virtual void Update()
+    {
+        DrawPathDebug();
+    }
+
+    /// <summary>
+    /// Follow the calculated path.
+    /// Exits if no path is available.
+    /// </summary>
+    protected void FollowPath()
+    {
+        // exit if there is no path to follow
+        if (this.pathData is null)
+        {
+            return;
+        }
+
+        // get normal reference to pathData
+        // should probably use different var name but this hides the other one
+        EnemyPathData pathData = this.pathData.Value;
+
+        // if path is finished
+        if (pathData.IsFinished)
+        {
+            // clear path and exit
+            this.pathData = null;
+            return;
+        }
+
+        // check if we should repath
+        if (scheduledRepathTime <= Time.time)
+        {
+            // if there is a path request being made for this object
+            if (Pathfinder.TryGetRequest(gameObject, out (Vector2Int Start, Vector2Int End) result))
+            {
+                // if the path does not end up at the same position a recalculation would end up at
+                if (result.End != AStar.ConvertToTileSpace(targetPlayerPositionReporter.ValidPathPosition))
+                {
+                    // requested path is not ideal, request one
+                    MoveToPosition(LastPlayerPosition);
+                }
+            }
+            else
+            {
+                // no request path found, request one
+                MoveToPosition(LastPlayerPosition);
+            }
+        }
+
+        // get normalized direction to next node
+        Vector2 direction = pathData.CurrentGoal - (Vector2)transform.position;
+        direction.Normalize();
+
+        // get desired velocity
+        Vector2 desiredVelocity = direction * moveSpeed;
+
+        Rb.AddForce(desiredVelocity -= Rb.velocity, ForceMode2D.Force);
+
+        // if we've reached the target node
+        if (pathData.CurrentGoal.CloseEnough(transform.position))
+        {
+            // pop the node off the stack
+            pathData.Path.Pop();
+
+            // if there are no more nodes left
+            if (pathData.Path.Count == 0)
+            {
+                // clear path data
+                this.pathData = null;
+
+                OnPathFinished();
+            }
+        }
+    }
 
     private void BeginPath(Stack<Vector2> path, Vector2 endPos)
     {
@@ -90,11 +211,6 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
         scheduledRepathTime = Time.time + repathTime;
     }
 
-    protected virtual void Update()
-    {
-        DrawPathDebug();
-    }
-
     private void DrawPathDebug()
     {
         if (pathData != null)
@@ -105,72 +221,6 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
             {
                 Debug.DrawLine(prevPosition, node, Color.green);
                 prevPosition = node;
-            }
-        }
-    }
-
-    protected void FollowPath()
-    {
-        // exit if there is no path to follow
-        if (this.pathData is null)
-        {
-            return;
-        }
-
-        // get normal reference to pathData
-        // should probably use different var name but this hides the other one
-        EnemyPathData pathData = this.pathData.Value;
-
-        // if path is finished
-        if (pathData.IsFinished)
-        {
-            // clear path and exit
-            this.pathData = null;
-            return;
-        }
-
-        // check if we should repath
-        if (scheduledRepathTime <= Time.time)
-        {
-            // if there is a path request being made for this object
-            if (pathfinder.TryGetRequest(gameObject, out (Vector2Int Start, Vector2Int End) result))
-            {
-                // if the path does not end up at the same position a recalculation would end up at
-                if (result.End != AStar.ConvertToTileSpace(targetPlayerPositionReporter.ValidPathPosition))
-                {
-                    // requested path is not ideal, request one
-                    MoveToPosition(targetPlayerPositionReporter.ValidPathPosition);
-                }
-            }
-            else
-            {
-                // no request path found, request one
-                MoveToPosition(targetPlayerPositionReporter.ValidPathPosition);
-            }
-        }
-
-        // get normalized direction to next node
-        Vector2 direction = pathData.CurrentGoal - (Vector2)transform.position;
-        direction.Normalize();
-
-        // get desired velocity
-        Vector2 desiredVelocity = direction * moveSpeed;
-
-        rb.AddForce(desiredVelocity -= rb.velocity, ForceMode2D.Force);
-
-        // if we've reached the target node
-        if (pathData.CurrentGoal.CloseEnough(transform.position))
-        {
-            // pop the node off the stack
-            pathData.Path.Pop();
-
-            // if there are no more nodes left
-            if (pathData.Path.Count == 0)
-            {
-                // clear path data
-                this.pathData = null;
-
-                OnPathFinished();
             }
         }
     }

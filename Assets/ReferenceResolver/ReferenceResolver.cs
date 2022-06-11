@@ -25,7 +25,7 @@ namespace BeanLib.References
         /// </summary>
         /// <param name="hostObject">The object this instance of the field is present on.</param>
         /// <param name="field">The field to resolve the reference on.</param>
-        public void Resolve(object hostObject, FieldInfo field)
+        public void Resolve(object hostObject, MemberInfo field)
         {
             foreach (Type resolverType in resolverTypes)
             {

@@ -1,8 +1,11 @@
-﻿using BeanLib.References;
-using System.Collections;
+﻿using System.Collections;
 using System.Linq;
+using BeanLib.References;
 using UnityEngine;
 
+/// <summary>
+/// Component responsible for handling the <see cref="FlierEnemy"/>.
+/// </summary>
 public class FlierEnemy : EnemyBase
 {
     private Vector2 manualVel;
@@ -20,9 +23,13 @@ public class FlierEnemy : EnemyBase
 
     [Header("Attack preperation and aftermath")]
     [SerializeField] private float windUpTime;
+    [SerializeField] private AnimationCurve windUpCurve;
     [SerializeField] private float windDownTime;
     [SerializeField] private float windingSpeed;
     [SerializeField] private float windSlowDistance = 1f;
+
+    [Header("Colliders")]
+    [SerializeField] private Collider2D mainCollider;
 
     private EnemyState State
     {
@@ -33,27 +40,30 @@ public class FlierEnemy : EnemyBase
 
             if (state == EnemyState.Idle)
             {
-                if (triggerCountCheck.Objects.Count() > 0)
+                if (TriggerCountCheck.Objects.Count() > 0)
                 {
-                    TargetPlayer = triggerCountCheck.Objects.First();
+                    TargetPlayer = TriggerCountCheck.Objects.Where((obj) => obj.GetComponents<PlayerPositionReporter>() != null).First();
                     OnPlayerEnterDetectionRange(TargetPlayer);
                 }
             }
         }
     }
 
+    /// <inheritdoc/>
     public override void OnPlayerEnterDetectionRange(GameObject playerObject)
     {
         base.OnPlayerEnterDetectionRange(playerObject);
         State = EnemyState.FollowPath;
     }
 
+    /// <inheritdoc/>
     protected override void OnPathFinished()
     {
         base.OnPathFinished();
         State = EnemyState.Idle;
     }
 
+    /// <inheritdoc/>
     protected override void Update()
     {
         base.Update();
@@ -77,11 +87,9 @@ public class FlierEnemy : EnemyBase
             case EnemyState.Windup:
             case EnemyState.WindDown:
             case EnemyState.Attack:
-                rb.MovePosition(rb.position + manualVel);
+                Rb.MovePosition(Rb.position + manualVel);
                 break;
         }
-
-        // Dash attack
     }
 
     private void CheckAttackRadius()
@@ -109,9 +117,12 @@ public class FlierEnemy : EnemyBase
         {
             Vector2 direction = (transform.position - TargetPlayer.transform.position).normalized;
 
-            float distanceTravelled = Vector2.Distance(initialPosition, transform.position);
-            float distanceClamped = Mathf.Clamp(distanceTravelled, 0, windSlowDistance);
-            float distanceMult = 1 - distanceClamped;
+            float distanceRemaining = windSlowDistance - Vector2.Distance(initialPosition, transform.position);
+
+            // stop divide by zero
+            float alpha = Mathf.Max(distanceRemaining / windSlowDistance, 0);
+
+            float distanceMult = windUpCurve.Evaluate(alpha);
 
             manualVel = distanceMult * windingSpeed * direction;
 
@@ -125,19 +136,16 @@ public class FlierEnemy : EnemyBase
     {
         manualVel = (TargetPlayer.transform.position - transform.position).normalized * dashSpeed;
 
-        State = EnemyState.Attack;
-
         float endTime = Time.time + dashTime;
 
         trail.emitting = true;
+        mainCollider.isTrigger = true;
+        State = EnemyState.Attack;
 
-        while (endTime > Time.time)
-        {
-            yield return null;
-        }
+        yield return new WaitWhile(() => endTime > Time.time);
 
         trail.emitting = false;
-
+        mainCollider.isTrigger = false;
         State = EnemyState.Idle;
     }
 }

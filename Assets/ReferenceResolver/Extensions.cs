@@ -13,13 +13,16 @@ namespace BeanLib.References
         /// <param name="target">The target object to resolve the references on.</param>
         public static void ResolveReferences(this object target)
         {
-            FieldInfo[] fields = target.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
+            MemberInfo[] members = target.GetType().GetMembers(BindingFlags.Instance | BindingFlags.NonPublic);
 
             ReferenceResolver referenceResolver = new ReferenceResolver();
 
-            foreach (FieldInfo field in fields)
+            foreach (MemberInfo member in members)
             {
-                referenceResolver.Resolve(target, field);
+                if (member.MemberType == MemberTypes.Property || member.MemberType == MemberTypes.Field)
+                {
+                    referenceResolver.Resolve(target, member);
+                }
             }
         }
     }
