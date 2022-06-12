@@ -3,7 +3,7 @@
     Idle,
     FollowPath,
     DirectMove,
-    Windup,
+    WindUp,
     Attack,
     WindDown,
 }

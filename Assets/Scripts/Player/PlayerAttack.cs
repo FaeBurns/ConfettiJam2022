@@ -77,7 +77,7 @@ public class PlayerAttack : ReferenceResolvedBehaviour
 
             if (damageable != null)
             {
-                damageable.DealDamage(meleeDamage);
+                damageable.DealDamage(meleeDamage, gameObject, DamageType.Melee);
             }
         }
 
@@ -114,7 +114,7 @@ public class PlayerAttack : ReferenceResolvedBehaviour
                 Damageable damageable = hit.collider.gameObject.GetComponentInParent<Damageable>();
                 if (damageable != null)
                 {
-                    damageable.DealDamage(rangedPelletDamage);
+                    damageable.DealDamage(rangedPelletDamage, gameObject, DamageType.Ranged);
                 }
             }
 

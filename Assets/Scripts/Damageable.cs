@@ -9,7 +9,7 @@ public class Damageable : MonoBehaviour
     /// <summary>
     /// Invoked when any damage is taken
     /// </summary>
-    public event Action<float> OnDamage;
+    public event Action<float, GameObject, DamageType> OnDamage;
 
     /// <summary>
     /// Invoked when fatal damage is taken.
@@ -32,10 +32,12 @@ public class Damageable : MonoBehaviour
     /// Deals the specified amount of damage.
     /// </summary>
     /// <param name="damage">The amount of damage to deal.</param>
-    public void DealDamage(float damage)
+    /// <param name="source">The object causing the damage.</param>
+    /// <param name="damageType">The type of damage being dealt.</param>
+    public void DealDamage(float damage, GameObject source, DamageType damageType)
     {
         Health -= damage;
-        OnDamage?.Invoke(damage);
+        OnDamage?.Invoke(damage, source, damageType);
 
         if (Health <= 0)
         {

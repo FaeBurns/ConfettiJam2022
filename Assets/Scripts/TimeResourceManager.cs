@@ -20,6 +20,12 @@ public class TimeResourceManager : MonoBehaviour
     public event Action<float> TimeRemoved;
 
     /// <summary>
+    /// Invoked when time is changed from any source.
+    /// This includes time being added, removed, and drained.
+    /// </summary>
+    public event Action<float> TimeChanged;
+
+    /// <summary>
     /// Gets the initial amount of time the player should hold.
     /// </summary>
     [field: SerializeField]
@@ -41,6 +47,7 @@ public class TimeResourceManager : MonoBehaviour
         amount = ClampAmount(amount);
         Time += amount;
         TimeAdded?.Invoke(amount);
+        TimeChanged?.Invoke(amount);
     }
 
     /// <summary>
@@ -52,6 +59,7 @@ public class TimeResourceManager : MonoBehaviour
         amount = ClampAmount(amount);
         Time -= amount;
         TimeRemoved?.Invoke(amount);
+        TimeChanged?.Invoke(amount);
     }
 
     private float ClampAmount(float amount)
@@ -71,6 +79,10 @@ public class TimeResourceManager : MonoBehaviour
     private void Update()
     {
         // drain time by standardDrain per second
-        Time -= standardDrain * UnityEngine.Time.deltaTime;
+        float drain = standardDrain * UnityEngine.Time.deltaTime;
+        Time -= drain;
+
+        // invoke event
+        TimeChanged?.Invoke(drain);
     }
 }

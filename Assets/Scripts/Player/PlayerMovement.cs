@@ -27,10 +27,13 @@ public class PlayerMovement : ReferenceResolvedBehaviour
     [SerializeField] private float timeCost = 1f;
     [SerializeField] private float velDrain = 0.95f;
 
-    private PlayerMovementState MovementState
+    /// <summary>
+    /// Gets the current <see cref="PlayerMovementState"/>.
+    /// </summary>
+    public PlayerMovementState MovementState
     {
         get => movementState;
-        set
+        private set
         {
             if (movementState != value)
             {

@@ -1,5 +1,5 @@
 ﻿using System.Collections;
-using System.Linq;
+using System.Collections.Generic;
 using BeanLib.References;
 using UnityEngine;
 
@@ -10,10 +10,8 @@ public class FlierEnemy : EnemyBase
 {
     private Vector2 manualVel;
 
-    [SerializeField]
-    private EnemyState state = EnemyState.Idle;
+    [SerializeField] private EnemyState state = EnemyState.Idle;
 
-    [Header("Visuals")]
     [BindComponent(Child = true)] private TrailRenderer trail;
 
     [Header("Attack")]
@@ -31,29 +29,33 @@ public class FlierEnemy : EnemyBase
     [Header("Colliders")]
     [SerializeField] private Collider2D mainCollider;
 
+    [Header("Misc")]
+    [SerializeField] private float knockbackRecieved;
+
     private EnemyState State
     {
         get => state;
         set
         {
+            Debug.Log($"State Changed: {state}|{value}");
             state = value;
-
-            if (state == EnemyState.Idle)
-            {
-                if (TriggerCountCheck.Objects.Count() > 0)
-                {
-                    TargetPlayer = TriggerCountCheck.Objects.Where((obj) => obj.GetComponents<PlayerPositionReporter>() != null).First();
-                    OnPlayerEnterDetectionRange(TargetPlayer);
-                }
-            }
         }
     }
 
     /// <inheritdoc/>
     public override void OnPlayerEnterDetectionRange(GameObject playerObject)
     {
-        base.OnPlayerEnterDetectionRange(playerObject);
-        State = EnemyState.FollowPath;
+        switch (State)
+        {
+            case EnemyState.Idle:
+            case EnemyState.DirectMove:
+            case EnemyState.FollowPath:
+                base.OnPlayerEnterDetectionRange(playerObject);
+                State = EnemyState.FollowPath;
+                break;
+            default:
+                break;
+        }
     }
 
     /// <inheritdoc/>
@@ -79,10 +81,37 @@ public class FlierEnemy : EnemyBase
 
         switch (State)
         {
+            case EnemyState.Idle:
+                // if player is still in range
+                if (TargetPlayer != null)
+                {
+                    TryRepath();
+                }
+
+                break;
             case EnemyState.FollowPath:
                 FollowPath();
                 CheckAttackRadius();
                 break;
+        }
+    }
+
+    /// <inheritdoc/>
+    protected override void BeginPath(Stack<Vector2> path, Vector2 endPos)
+    {
+        base.BeginPath(path, endPos);
+
+        State = EnemyState.FollowPath;
+    }
+
+    /// <inheritdoc/>
+    protected override void OnDamaged(float amount, GameObject source, DamageType damageType)
+    {
+        if (damageType == DamageType.Melee)
+        {
+            Vector2 direction = transform.position - source.transform.position;
+
+            Rb.AddForce(direction * knockbackRecieved, ForceMode2D.Impulse);
         }
     }
 
@@ -93,7 +122,7 @@ public class FlierEnemy : EnemyBase
             case EnemyState.FollowPath:
                 FollowPath();
                 break;
-            case EnemyState.Windup:
+            case EnemyState.WindUp:
             case EnemyState.WindDown:
             case EnemyState.Attack:
                 Rb.MovePosition(Rb.position + manualVel);
@@ -123,10 +152,16 @@ public class FlierEnemy : EnemyBase
 
         float endTime = Time.time + windUpTime;
 
-        State = EnemyState.Windup;
+        State = EnemyState.WindUp;
 
         while (endTime > Time.time)
         {
+            if (TargetPlayer == null)
+            {
+                State = EnemyState.Idle;
+                yield break;
+            }
+
             Vector2 direction = (transform.position - TargetPlayer.transform.position).normalized;
 
             float distanceRemaining = windSlowDistance - Vector2.Distance(initialPosition, transform.position);
