@@ -24,8 +24,11 @@ public class TilemapFromImageWindow : EditorWindow
 
     private void OnEnable()
     {
-        AssetDatabase.CreateFolder("Assets", "Editor");
-        AssetDatabase.CreateFolder("Assets/Editor", "Settings");
+        if(!AssetDatabase.IsValidFolder("Assets/Editor"))
+            AssetDatabase.CreateFolder("Assets", "Editor");
+
+        if (!AssetDatabase.IsValidFolder("Assets/Editor/Settings"))
+            AssetDatabase.CreateFolder("Assets/Editor", "Settings");
 
         AssetDatabase.SaveAssets();
 
@@ -35,7 +38,7 @@ public class TilemapFromImageWindow : EditorWindow
         }
         else
         {
-            AssetDatabase.LoadAssetAtPath<TilemapFromImageSettings>(AssetPath);
+            settings = AssetDatabase.LoadAssetAtPath<TilemapFromImageSettings>(AssetPath);
         }
     }
 
@@ -43,7 +46,10 @@ public class TilemapFromImageWindow : EditorWindow
     {
         if (settings != null)
         {
-            AssetDatabase.CreateAsset(settings, AssetPath);
+            if (string.IsNullOrEmpty(AssetDatabase.AssetPathToGUID(AssetPath)))
+            {
+                AssetDatabase.CreateAsset(settings, AssetPath);
+            }
         }
 
         AssetDatabase.SaveAssets();
@@ -51,8 +57,6 @@ public class TilemapFromImageWindow : EditorWindow
 
     private void OnGUI()
     {
-        settings = (TilemapFromImageSettings)EditorGUILayout.ObjectField("Settings", settings, typeof(TilemapFromImageSettings), false);
-
         settings.SourceImage = (Texture2D)EditorGUILayout.ObjectField("Image Source", settings.SourceImage, typeof(Texture2D), false);
 
         bool showColorMapping = EditorGUILayout.DropdownButton(new GUIContent("Color mapping"), FocusType.Passive);
@@ -77,6 +81,8 @@ public class TilemapFromImageWindow : EditorWindow
     private void ShowColorMapping()
     {
         List<int> removeIndexes = new List<int>();
+
+        ShowUnknownColorTile();
 
         for (int i = 0; i < settings.Mapping.Count; i++)
         {
@@ -111,18 +117,29 @@ public class TilemapFromImageWindow : EditorWindow
     {
         EditorGUILayout.BeginHorizontal();
 
-        Color inputColor = EditorGUILayout.ColorField(GUIContent.none, mapping.Color, true, false, false, GUILayout.MaxWidth(150f));
+        Color32 inputColor = EditorGUILayout.ColorField(GUIContent.none, mapping.Color, true, false, false, GUILayout.MaxWidth(150f));
         TileBase tile = (TileBase)EditorGUILayout.ObjectField(mapping.Tile, typeof(TileBase), false);
 
-        bool shouldRemove = GUILayout.Button(EditorGUIUtility.IconContent("d_Toolbar Minus"));
+        bool shouldRemove = GUILayout.Button(EditorGUIUtility.IconContent("d_Toolbar Minus"), EditorStyles.miniButtonRight, GUILayout.Width(20f));
 
         EditorGUILayout.EndHorizontal();
 
         return (new ColorTileMapping(inputColor, tile), shouldRemove);
     }
 
+    private void ShowUnknownColorTile()
+    {
+        settings.UnknownColorTile = (TileBase)EditorGUILayout.ObjectField(new GUIContent("Tile for unknown colors"), settings.UnknownColorTile, typeof(TileBase), false);
+    }
+
     private void OnGenerateClicked()
     {
         Debug.Log("Generating tilemap");
+
+        // force save
+        OnDisable();
+
+        TilemapParser parser = new TilemapParser(settings.SourceImage, settings.Mapping.ToArray(), settings.TargetTilemap);
+        parser.Parse();
     }
 }

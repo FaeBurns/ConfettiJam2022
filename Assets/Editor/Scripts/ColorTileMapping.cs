@@ -17,7 +17,7 @@ public class ColorTileMapping
     /// </summary>
     /// <param name="color">The color to store.</param>
     /// <param name="tile">The tile to store.</param>
-    public ColorTileMapping(Color color, TileBase tile)
+    public ColorTileMapping(Color32 color, TileBase tile)
     {
         Color = color;
         Tile = tile;
@@ -27,7 +27,7 @@ public class ColorTileMapping
     /// Gets or Sets the color stored in this mapping.
     /// </summary>
     [field: SerializeField]
-    public Color Color { get; set; }
+    public Color32 Color { get; set; }
 
     /// <summary>
     /// Gets or Sets the tile stored in this mapping.

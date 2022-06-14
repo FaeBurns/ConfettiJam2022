@@ -17,6 +17,9 @@ public class TilemapFromImageSettings : ScriptableObject
     [field: SerializeField]
     public List<ColorTileMapping> Mapping { get; set; } = new List<ColorTileMapping>();
 
+    [field: SerializeField]
+    public TileBase UnknownColorTile { get; set; }
+
     /// <summary>
     /// Gets or Sets the texture to get the tilemap from.
     /// </summary>
