@@ -40,7 +40,7 @@ public class TriggerCountCheck : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("{collision.gameObject.name} entered");
+        Debug.Log($"{collision.gameObject.name} entered");
 
         if (!tagWhitelist.Contains(collision.tag))
         {
@@ -70,7 +70,7 @@ public class TriggerCountCheck : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D collision)
     {
-        Debug.Log("{collision.gameObject.name} exited");
+        Debug.Log($"{collision.gameObject.name} exited");
 
         if (colliders.ContainsKey(collision))
         {

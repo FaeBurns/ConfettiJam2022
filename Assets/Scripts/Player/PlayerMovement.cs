@@ -23,6 +23,7 @@ public class PlayerMovement : ReferenceResolvedBehaviour
     [Header("Fields")]
     [SerializeField] private float speed = 0.25f;
     [SerializeField] private float dashSpeed = 1f;
+    [SerializeField] private float dashMultiplierBonus = 1f;
     [SerializeField] private float dashTime = 0.5f;
     [SerializeField] private float timeCost = 1f;
     [SerializeField] private float velDrain = 0.95f;
@@ -110,6 +111,8 @@ public class PlayerMovement : ReferenceResolvedBehaviour
         // enter dash state
         MovementState = PlayerMovementState.Dash;
 
+        timeManager.AddMultiplier(dashMultiplierBonus);
+
         // drain time
         timeManager.Drain(timeCost);
 
@@ -139,6 +142,12 @@ public class PlayerMovement : ReferenceResolvedBehaviour
         {
             // can't find the correct variation to use here - have to do some wrangling.
             Vector3 convertedForwardVector = new Vector3(velToMove.normalized.x, 0, velToMove.normalized.y);
+
+            // fix for console getting spammed with error messages
+            if (convertedForwardVector == Vector3.zero)
+            {
+                convertedForwardVector.y = 0.00000001f;
+            }
 
             // set forward vector
             moveDirectionParent.forward = convertedForwardVector;

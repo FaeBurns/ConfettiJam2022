@@ -14,10 +14,14 @@ public class HourglassDisplay : ReferenceResolvedBehaviour
     [SerializeField] private RectTransform leftTransform;
 
     [SerializeField] private TextMeshProUGUI timeText;
+    [SerializeField] private TextMeshProUGUI multiplierText;
 
     [Header("Positions")]
     [SerializeField] private Vector2 spentMinMax;
     [SerializeField] private Vector2 leftMinMax;
+
+    [Header("Format strings")]
+    [SerializeField] private string multiplierFormatString;
 
     private void Update()
     {
@@ -30,5 +34,7 @@ public class HourglassDisplay : ReferenceResolvedBehaviour
         leftTransform.anchoredPosition = new Vector2(0, leftPos);
 
         timeText.text = new TimeSpan(0, 0, Mathf.FloorToInt(timeManager.Time)).ToString("mm\\:ss");
+
+        multiplierText.text = string.Format(multiplierFormatString, timeManager.AdditionMultiplier.ToString("0.00"));
     }
 }

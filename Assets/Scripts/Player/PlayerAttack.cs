@@ -1,4 +1,5 @@
 ﻿using BeanLib.References;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -71,12 +72,23 @@ public class PlayerAttack : ReferenceResolvedBehaviour
 
         meleeAnimator.PlayInFixedTime(layerName, -1, 0);
 
-        foreach (GameObject collidingObject in meleeOverlapTrigger.Objects)
+        // convert to array to avoid enumeration issues if one of the targets dies.
+        foreach (GameObject collidingObject in meleeOverlapTrigger.Objects.ToArray())
         {
+            // try and get damageable from target object
             Damageable damageable = collidingObject.GetComponent<Damageable>();
 
+            // if not found in initial search
+            if (damageable == null)
+            {
+                // check parent
+                damageable = collidingObject.GetComponentInParent<Damageable>();
+            }
+
+            // if found now
             if (damageable != null)
             {
+                // deal damage
                 damageable.DealDamage(meleeDamage, gameObject, DamageType.Melee);
             }
         }

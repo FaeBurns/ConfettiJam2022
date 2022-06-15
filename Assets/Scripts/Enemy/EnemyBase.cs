@@ -13,10 +13,30 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     private float scheduledRepathTime = 0f;
     private EnemyPathData? pathData;
     private PlayerPositionReporter targetPlayerPositionReporter;
+    private EnemyState state = EnemyState.Idle;
 
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 1f;
     [SerializeField] private float repathTime = 1f;
+
+    [Header("Visual")]
+    [SerializeField] private Sprite idleSprite;
+    [SerializeField] private Sprite attackSprite;
+    [SerializeField] private GameObject deathParticlePrefab;
+
+    [Header("Misc")]
+    [SerializeField] private float timeReward = 5f;
+    [SerializeField] private float knockbackRecieved = 1f;
+
+    /// <summary>
+    /// Gets or Sets the <see cref=""/>.
+    /// </summary>
+    [AutoReference] protected TimeResourceManager TimeManager { get; set; }
+
+    /// <summary>
+    /// Gets or Sets the <see cref="UnityEngine.SpriteRenderer"/> component reference.
+    /// </summary>
+    [BindComponent(Child = true)] protected SpriteRenderer SpriteRenderer { get; set; }
 
     /// <summary>
     /// Gets or Sets the <see cref="global::Pathfinder"/> component reference.
@@ -32,6 +52,22 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     /// Gets or Sets the <see cref="global::TriggerCountCheck"/> component reference.
     /// </summary>
     [BindComponent(Child = true)] protected TriggerCountCheck TriggerCountCheck { get; set; }
+
+    protected EnemyState State
+    {
+        get => state;
+        set
+        {
+            if (state != value)
+            {
+                EnemyState oldState = state;
+                state = value;
+
+                OnStateChanged(oldState, state);
+            }
+
+        }
+    }
 
     /// <summary>
     /// Gets or Sets the player <see cref="GameObject"/> in targeting range.
@@ -250,7 +286,28 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     /// <param name="amount">The amount of damage taken.</param>
     /// <param name="source">The object that caused the damage.</param>
     /// <param name="damageType">The type of damage dealt.</param>
-    protected abstract void OnDamaged(float amount, GameObject source, DamageType damageType);
+    protected virtual void OnDamaged(float amount, GameObject source, DamageType damageType)
+    {
+        if (damageType == DamageType.Melee)
+        {
+            Vector2 direction = transform.position - source.transform.position;
+
+            Rb.AddForce(direction * knockbackRecieved, ForceMode2D.Impulse);
+        }
+    }
+
+    protected virtual void OnStateChanged(EnemyState oldState, EnemyState newState)
+    {
+        if (SpriteRenderer != null)
+        {
+            SpriteRenderer.sprite = newState switch
+            {
+                EnemyState.WindUp => attackSprite,
+                EnemyState.Attack => attackSprite,
+                _ => idleSprite,
+            };
+        }
+    }
 
     private void DrawPathDebug()
     {
@@ -323,6 +380,11 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     private void OnDeath()
     {
         Pathfinder.CancelObject(gameObject);
+
+        Destroy(Instantiate(deathParticlePrefab, transform.position, Quaternion.identity), 1);
+
+        TimeManager.Add(timeReward);
+
         Destroy(gameObject);
     }
 }

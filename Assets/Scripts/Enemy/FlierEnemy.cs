@@ -10,8 +10,6 @@ public class FlierEnemy : EnemyBase
 {
     private Vector2 manualVel;
 
-    [SerializeField] private EnemyState state = EnemyState.Idle;
-
     [BindComponent(Child = true)] private TrailRenderer trail;
 
     [Header("Attack")]
@@ -29,19 +27,6 @@ public class FlierEnemy : EnemyBase
     [Header("Colliders")]
     [SerializeField] private Collider2D mainCollider;
 
-    [Header("Misc")]
-    [SerializeField] private float knockbackRecieved;
-
-    private EnemyState State
-    {
-        get => state;
-        set
-        {
-            Debug.Log($"State Changed: {state}|{value}");
-            state = value;
-        }
-    }
-
     /// <inheritdoc/>
     public override void OnPlayerEnterDetectionRange(GameObject playerObject)
     {
@@ -49,9 +34,10 @@ public class FlierEnemy : EnemyBase
         {
             case EnemyState.Idle:
             case EnemyState.DirectMove:
-            case EnemyState.FollowPath:
                 base.OnPlayerEnterDetectionRange(playerObject);
                 State = EnemyState.FollowPath;
+                break;
+            case EnemyState.FollowPath:
                 break;
             default:
                 break;
@@ -104,17 +90,6 @@ public class FlierEnemy : EnemyBase
         State = EnemyState.FollowPath;
     }
 
-    /// <inheritdoc/>
-    protected override void OnDamaged(float amount, GameObject source, DamageType damageType)
-    {
-        if (damageType == DamageType.Melee)
-        {
-            Vector2 direction = transform.position - source.transform.position;
-
-            Rb.AddForce(direction * knockbackRecieved, ForceMode2D.Impulse);
-        }
-    }
-
     private void FixedUpdate()
     {
         switch (State)
@@ -123,7 +98,6 @@ public class FlierEnemy : EnemyBase
                 FollowPath();
                 break;
             case EnemyState.WindUp:
-            case EnemyState.WindDown:
             case EnemyState.Attack:
                 Rb.MovePosition(Rb.position + manualVel);
                 break;
