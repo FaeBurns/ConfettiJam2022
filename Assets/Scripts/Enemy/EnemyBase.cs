@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using BeanLib.References;
 using UnityEngine;
 
@@ -27,6 +28,9 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     [Header("Misc")]
     [SerializeField] private float timeReward = 5f;
     [SerializeField] private float knockbackRecieved = 1f;
+
+    [Header("Attack")]
+    [SerializeField] private float attackRadius;
 
     /// <summary>
     /// Gets or Sets the <see cref=""/>.
@@ -134,11 +138,22 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     /// <param name="playerObject">The player object entering range.</param>
     public virtual void OnPlayerEnterDetectionRange(GameObject playerObject)
     {
-        targetPlayerPositionReporter = playerObject.GetComponent<PlayerPositionReporter>();
-        MoveToPosition(targetPlayerPositionReporter.transform.position);
+        switch (State)
+        {
+            case EnemyState.Idle:
+            case EnemyState.DirectMove:
+                targetPlayerPositionReporter = playerObject.GetComponent<PlayerPositionReporter>();
+                MoveToPosition(targetPlayerPositionReporter.transform.position);
+                State = EnemyState.FollowPath;
+                break;
+            default:
+                break;
+        }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Unity Start Message
+    /// </summary>
     public override void Start()
     {
         base.Start();
@@ -155,12 +170,18 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     /// <summary>
     /// Called when the path has finished calculating.
     /// </summary>
-    protected virtual void OnPathFinished() { }
+    protected virtual void OnPathFinished()
+    {
+        State = EnemyState.Idle;
+    }
 
     /// <summary>
     /// Called when there is no path to follow.
     /// </summary>
-    protected virtual void NoPath() { }
+    protected virtual void NoPath()
+    {
+        OnPathFinished();
+    }
 
     /// <summary>
     /// Unity Update Message.
@@ -168,6 +189,35 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     protected virtual void Update()
     {
         DrawPathDebug();
+
+        switch (State)
+        {
+            case EnemyState.Idle:
+                // if player is still in range
+                if (TargetPlayer != null)
+                {
+                    TryRepath();
+                }
+
+                break;
+            case EnemyState.FollowPath:
+                FollowPath();
+                CheckAttackRadius();
+                break;
+        }
+    }
+
+    protected virtual void FixedUpdate()
+    {
+        switch (State)
+        {
+            case EnemyState.FollowPath:
+                FollowPath();
+                break;
+            case EnemyState.Idle:
+                Rb.MovePosition(Rb.position);
+                break;
+        }
     }
 
     /// <summary>
@@ -278,6 +328,8 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
         pathData = new EnemyPathData(path, endPos);
 
         scheduledRepathTime = Time.time + repathTime;
+
+        State = EnemyState.FollowPath;
     }
 
     /// <summary>
@@ -387,4 +439,19 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
 
         Destroy(gameObject);
     }
+
+    private void CheckAttackRadius()
+    {
+        if (TargetPlayer == null)
+        {
+            return;
+        }
+
+        if (Vector2.Distance(transform.position, TargetPlayer.transform.position) <= attackRadius)
+        {
+            StartCoroutine(BeginAttack());
+        }
+    }
+
+    protected abstract IEnumerator BeginAttack();
 }

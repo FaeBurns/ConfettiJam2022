@@ -11,16 +11,15 @@ public class FlierEnemy : EnemyBase
     private Vector2 manualVel;
 
     [BindComponent(Child = true)] private TrailRenderer trail;
+    [BindComponent(Child = true)] private ContactDamageDealer contactDamage;
 
-    [Header("Attack")]
-    [SerializeField] private float attackRadius;
+    [Header("Dash")]
     [SerializeField] private float dashSpeed;
     [SerializeField] private float dashTime;
+    [SerializeField] private AnimationCurve windUpCurve;
 
     [Header("Attack preperation and aftermath")]
     [SerializeField] private float windUpTime;
-    [SerializeField] private AnimationCurve windUpCurve;
-    [SerializeField] private float windDownTime;
     [SerializeField] private float windingSpeed;
     [SerializeField] private float windSlowDistance = 1f;
 
@@ -28,99 +27,30 @@ public class FlierEnemy : EnemyBase
     [SerializeField] private Collider2D mainCollider;
 
     /// <inheritdoc/>
-    public override void OnPlayerEnterDetectionRange(GameObject playerObject)
-    {
-        switch (State)
-        {
-            case EnemyState.Idle:
-            case EnemyState.DirectMove:
-                base.OnPlayerEnterDetectionRange(playerObject);
-                State = EnemyState.FollowPath;
-                break;
-            case EnemyState.FollowPath:
-                break;
-            default:
-                break;
-        }
-    }
-
-    /// <inheritdoc/>
     protected override void OnPathFinished()
     {
         base.OnPathFinished();
-        State = EnemyState.Idle;
 
         manualVel = Vector2.zero;
     }
 
-    /// <inheritdoc/>
-    protected override void NoPath()
+    protected override void OnStateChanged(EnemyState oldState, EnemyState newState)
     {
-        base.NoPath();
-        OnPathFinished();
+        base.OnStateChanged(oldState, newState);
+
+        contactDamage.enabled = newState == EnemyState.Attack;
     }
 
-    /// <inheritdoc/>
-    protected override void Update()
+    protected override void FixedUpdate()
     {
-        base.Update();
+        base.FixedUpdate();
 
-        switch (State)
-        {
-            case EnemyState.Idle:
-                // if player is still in range
-                if (TargetPlayer != null)
-                {
-                    TryRepath();
-                }
-
-                break;
-            case EnemyState.FollowPath:
-                FollowPath();
-                CheckAttackRadius();
-                break;
+        if (State == EnemyState.WindUp || State == EnemyState.Attack) {
+            Rb.MovePosition(Rb.position + manualVel);
         }
     }
 
-    /// <inheritdoc/>
-    protected override void BeginPath(Stack<Vector2> path, Vector2 endPos)
-    {
-        base.BeginPath(path, endPos);
-
-        State = EnemyState.FollowPath;
-    }
-
-    private void FixedUpdate()
-    {
-        switch (State)
-        {
-            case EnemyState.FollowPath:
-                FollowPath();
-                break;
-            case EnemyState.WindUp:
-            case EnemyState.Attack:
-                Rb.MovePosition(Rb.position + manualVel);
-                break;
-            case EnemyState.Idle:
-                Rb.MovePosition(Rb.position);
-                break;
-        }
-    }
-
-    private void CheckAttackRadius()
-    {
-        if (TargetPlayer == null)
-        {
-            return;
-        }
-
-        if (Vector2.Distance(transform.position, TargetPlayer.transform.position) <= attackRadius)
-        {
-            StartCoroutine(WindUpAttack());
-        }
-    }
-
-    private IEnumerator WindUpAttack()
+    protected override IEnumerator BeginAttack()
     {
         Vector2 initialPosition = transform.position;
 
