@@ -24,11 +24,15 @@ public class TilemapFromImageWindow : EditorWindow
 
     private void OnEnable()
     {
-        if(!AssetDatabase.IsValidFolder("Assets/Editor"))
+        if (!AssetDatabase.IsValidFolder("Assets/Editor"))
+        {
             AssetDatabase.CreateFolder("Assets", "Editor");
+        }
 
         if (!AssetDatabase.IsValidFolder("Assets/Editor/Settings"))
+        {
             AssetDatabase.CreateFolder("Assets/Editor", "Settings");
+        }
 
         AssetDatabase.SaveAssets();
 
@@ -139,7 +143,7 @@ public class TilemapFromImageWindow : EditorWindow
         // force save
         OnDisable();
 
-        TilemapParser parser = new TilemapParser(settings.SourceImage, settings.Mapping.ToArray(), settings.TargetTilemap);
+        TilemapParser parser = new TilemapParser(settings.SourceImage, settings.Mapping.ToArray(), settings.TargetTilemap, settings.UnknownColorTile);
         parser.Parse();
     }
 }

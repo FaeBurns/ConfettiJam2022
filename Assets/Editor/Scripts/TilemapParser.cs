@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -8,12 +9,14 @@ public class TilemapParser
     private readonly Texture2D texture;
     private readonly ColorTileMapping[] mapping;
     private readonly Tilemap tilemap;
+    private readonly TileBase unkownColorTile;
 
-    public TilemapParser(Texture2D texture, ColorTileMapping[] mapping, Tilemap tilemap)
+    public TilemapParser(Texture2D texture, ColorTileMapping[] mapping, Tilemap tilemap, TileBase unkownColorTile)
     {
         this.texture = texture;
         this.mapping = mapping;
         this.tilemap = tilemap;
+        this.unkownColorTile = unkownColorTile;
     }
 
     public void Parse()
@@ -34,22 +37,30 @@ public class TilemapParser
         Dictionary<Color32, TileBase> colorsToTiles = GetMappingDictionary();
         Dictionary<TileBase, Vector2Int[]> tilePositions = new Dictionary<TileBase, Vector2Int[]>();
 
+        List<Vector2Int> unkownColorPositions = new List<Vector2Int>();
+
         foreach (KeyValuePair<Color32, List<Vector2Int>> pair in colorPositions)
         {
             if (colorsToTiles.ContainsKey(pair.Key))
             {
                 TileBase tile = colorsToTiles[pair.Key];
-                List<Vector2Int> positions = pair.Value;
+                List<Vector2Int> positions = new List<Vector2Int>();
+                positions.AddRange(pair.Value);
 
                 if (tilePositions.ContainsKey(tile))
                 {
                     positions.AddRange(tilePositions[tile]);
-                    tilePositions.Remove(tile);
                 }
 
-                tilePositions.Add(tile, pair.Value.ToArray());
+                tilePositions[tile] = positions.ToArray();
+            }
+            else
+            {
+                unkownColorPositions.AddRange(pair.Value);
             }
         }
+
+        tilePositions[unkownColorTile] = unkownColorPositions.ToArray();
 
         Debug.Log("Position conversion complete");
 
