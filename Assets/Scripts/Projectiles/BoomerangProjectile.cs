@@ -23,6 +23,12 @@ public class BoomerangProjectile : ReferenceResolvedBehaviour
     [SerializeField] private float minimumDistanceScale = 5f;
     [SerializeField] private float rotationScale = 60f;
 
+    [Header("Visuals")]
+    [SerializeField] private Transform smallHandTransform;
+    [SerializeField] private Transform bigHandTransform;
+    [SerializeField] private float smallHandRotationSpeed;
+    [SerializeField] private float bigHandRotationSpeed;
+
     /// <summary>
     /// Event fired when the projectile finishes.
     /// </summary>
@@ -63,6 +69,9 @@ public class BoomerangProjectile : ReferenceResolvedBehaviour
         Vector2 position = distance.Rotate(Vector2.zero, rotation + rotationOffset);
 
         transform.position = position + offset;
+
+        smallHandTransform.rotation = Quaternion.Euler(smallHandTransform.rotation.eulerAngles + new Vector3(0, 0, smallHandRotationSpeed * Time.deltaTime));
+        bigHandTransform.rotation = Quaternion.Euler(bigHandTransform.rotation.eulerAngles + new Vector3(0, 0, bigHandRotationSpeed * Time.deltaTime));
     }
 
     private void OnDestroy()
