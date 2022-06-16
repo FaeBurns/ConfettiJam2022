@@ -146,7 +146,7 @@ public class PlayerMovement : ReferenceResolvedBehaviour
             // fix for console getting spammed with error messages
             if (convertedForwardVector == Vector3.zero)
             {
-                convertedForwardVector.y = 0.00000001f;
+                convertedForwardVector.y = 0.01f;
             }
 
             // set forward vector

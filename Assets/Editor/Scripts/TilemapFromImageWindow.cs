@@ -56,6 +56,8 @@ public class TilemapFromImageWindow : EditorWindow
             }
         }
 
+        EditorUtility.SetDirty(settings);
+
         AssetDatabase.SaveAssets();
     }
 

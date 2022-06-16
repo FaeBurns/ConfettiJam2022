@@ -34,6 +34,7 @@ public class FlierEnemy : EnemyBase
         manualVel = Vector2.zero;
     }
 
+    /// <inheritdoc/>
     protected override void OnStateChanged(EnemyState oldState, EnemyState newState)
     {
         base.OnStateChanged(oldState, newState);
@@ -41,16 +42,19 @@ public class FlierEnemy : EnemyBase
         contactDamage.enabled = newState == EnemyState.Attack;
     }
 
+    /// <inheritdoc/>
     protected override void FixedUpdate()
     {
         base.FixedUpdate();
 
-        if (State == EnemyState.WindUp || State == EnemyState.Attack) {
+        if (State == EnemyState.WindUp || State == EnemyState.Attack)
+        {
             Rb.MovePosition(Rb.position + manualVel);
         }
     }
 
-    protected override IEnumerator BeginAttack()
+    /// <inheritdoc/>
+    protected override IEnumerator DoAttack()
     {
         Vector2 initialPosition = transform.position;
 
@@ -80,10 +84,10 @@ public class FlierEnemy : EnemyBase
             yield return null;
         }
 
-        yield return DoAttack();
+        yield return Dash();
     }
 
-    private IEnumerator DoAttack()
+    private IEnumerator Dash()
     {
         manualVel = (TargetPlayer.transform.position - transform.position).normalized * dashSpeed;
 

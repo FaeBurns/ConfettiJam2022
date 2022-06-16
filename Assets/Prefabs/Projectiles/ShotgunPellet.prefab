@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 2512492711284835953}
   - component: {fileID: 2512492711284835955}
   - component: {fileID: -1175102593403140831}
-  m_Layer: 0
+  - component: {fileID: 7631961404324311371}
+  m_Layer: 7
   m_Name: ShotgunPellet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -174,3 +175,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c742b0665fb56124bbf38e2eed9a786f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 64
+--- !u!58 &7631961404324311371
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2512492711284835952}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.05

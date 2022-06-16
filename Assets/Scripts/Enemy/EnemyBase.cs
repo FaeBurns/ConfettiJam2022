@@ -10,6 +10,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public abstract class EnemyBase : ReferenceResolvedBehaviour
 {
+    private Coroutine attackCoroutine = null;
     private Vector2 cachedLastPlayerPosition = Vector2.zero;
     private float scheduledRepathTime = 0f;
     private EnemyPathData? pathData;
@@ -57,6 +58,9 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     /// </summary>
     [BindComponent(Child = true)] protected TriggerCountCheck TriggerCountCheck { get; set; }
 
+    /// <summary>
+    /// Gets or Sets the <see cref="EnemyState"/> that describes the state of this enemy.
+    /// </summary>
     protected EnemyState State
     {
         get => state;
@@ -69,7 +73,6 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
 
                 OnStateChanged(oldState, state);
             }
-
         }
     }
 
@@ -152,7 +155,7 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     }
 
     /// <summary>
-    /// Unity Start Message
+    /// Unity Start Message.
     /// </summary>
     public override void Start()
     {
@@ -207,6 +210,9 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
         }
     }
 
+    /// <summary>
+    /// Unity FixedUpdate Message.
+    /// </summary>
     protected virtual void FixedUpdate()
     {
         switch (State)
@@ -348,6 +354,11 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
         }
     }
 
+    /// <summary>
+    /// Called when this enemy's state changes.
+    /// </summary>
+    /// <param name="oldState">The previous state.</param>
+    /// <param name="newState">The new state.</param>
     protected virtual void OnStateChanged(EnemyState oldState, EnemyState newState)
     {
         if (SpriteRenderer != null)
@@ -359,7 +370,21 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
                 _ => idleSprite,
             };
         }
+
+        if ((newState != EnemyState.WindUp && newState != EnemyState.Attack) && (oldState == EnemyState.WindUp || oldState == EnemyState.Attack))
+        {
+            if (attackCoroutine != null)
+            {
+                StopCoroutine(attackCoroutine);
+            }
+        }
     }
+
+    /// <summary>
+    /// Performs this enemy's attack.
+    /// </summary>
+    /// <returns>Coroutine Enumerator.</returns>
+    protected abstract IEnumerator DoAttack();
 
     private void DrawPathDebug()
     {
@@ -449,9 +474,7 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
 
         if (Vector2.Distance(transform.position, TargetPlayer.transform.position) <= attackRadius)
         {
-            StartCoroutine(BeginAttack());
+            attackCoroutine = StartCoroutine(DoAttack());
         }
     }
-
-    protected abstract IEnumerator BeginAttack();
 }

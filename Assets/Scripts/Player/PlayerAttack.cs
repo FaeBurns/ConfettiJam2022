@@ -131,7 +131,7 @@ public class PlayerAttack : ReferenceResolvedBehaviour
             }
 
             GameObject pelletObject = Instantiate(pelletAnimationPrefab, shotgunOrigin.position, Quaternion.identity);
-            ShotgunPelletMovement pelletMover = pelletObject.GetComponent<ShotgunPelletMovement>();
+            ShotgunPelletProjectile pelletMover = pelletObject.GetComponent<ShotgunPelletProjectile>();
 
             pelletMover.Velocity = forwardsVector * pelletAnimationSpeed;
 

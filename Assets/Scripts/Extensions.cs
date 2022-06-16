@@ -32,4 +32,19 @@ public static class Extensions
     {
         return Vector2.Distance(self, other) < maxDiff;
     }
+
+    /// <summary>
+    /// Rotates the vector around a point by the specified amount.
+    /// </summary>
+    /// <param name="vector">The vector to rotate.</param>
+    /// <param name="center">The center point to rotate around.</param>
+    /// <param name="degrees">The amount to rotate by.</param>
+    /// <returns>The rotated vector.</returns>
+    public static Vector2 Rotate(this Vector2 vector, Vector2 center, float degrees)
+    {
+        float sin = Mathf.Sin(degrees * Mathf.Deg2Rad);
+        float cos = Mathf.Cos(degrees * Mathf.Deg2Rad);
+
+        return new Vector2((cos * vector.x) - (sin * vector.y), (sin * vector.x) + (cos * vector.y));
+    }
 }
