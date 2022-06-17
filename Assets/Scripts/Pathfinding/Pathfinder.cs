@@ -11,23 +11,16 @@ using UnityEngine.Tilemaps;
 /// </summary>
 public class Pathfinder : MonoBehaviour
 {
-    private readonly CancellationTokenSource cancellationSource = new CancellationTokenSource();
-
-    private readonly ConcurrentQueue<QueuedPath> queuedPaths = new ConcurrentQueue<QueuedPath>();
-
+    private readonly Dictionary<Vector2Int, AStarTile> threadSafeTiles = new Dictionary<Vector2Int, AStarTile>();
     private readonly ConcurrentDictionary<(Vector2Int, Vector2Int), Stack<Vector2>> cachedPaths = new ConcurrentDictionary<(Vector2Int, Vector2Int), Stack<Vector2>>();
 
-    private readonly ConcurrentDictionary<int, QueuedPath> latestQueuedPaths = new ConcurrentDictionary<int, QueuedPath>();
-
-    private readonly Dictionary<Vector2Int, AStarTile> threadSafeTiles = new Dictionary<Vector2Int, AStarTile>();
-
+    private readonly ConcurrentQueue<QueuedPath> queuedPaths = new ConcurrentQueue<QueuedPath>();
+    private readonly List<PathTask> activePathTasks = new List<PathTask>();
     private readonly ConcurrentQueue<(QueuedPath PathInfo, Stack<Vector2> Path)> completedPathsQueue = new ConcurrentQueue<(QueuedPath PathInfo, Stack<Vector2> Path)>();
-
-    private AStar currentPath = null;
 
     [SerializeField] private Tilemap tilemap;
     [SerializeField] private int maxCachedPaths = 200;
-    [SerializeField] private int noPathsSleepTime = 100;
+    [SerializeField] private int workerThreadCount = 5;
 
     /// <summary>
     /// Delegate definition for path completion.
@@ -44,8 +37,18 @@ public class Pathfinder : MonoBehaviour
     /// <param name="onCompleteCallback">Callback to be executed when the path is found.</param>
     public void FindPath(Vector2 startPos, Vector2 endPos, GameObject callingObject, OnPathFoundDelegate onCompleteCallback)
     {
+        Debug.Log($"Generating new path for object {callingObject.name}");
+
         Vector2Int startTilePos = AStar.ConvertToTileSpace(startPos);
         Vector2Int endTilePos = AStar.ConvertToTileSpace(endPos);
+
+        // if start and end positions are the same tile
+        if (startTilePos == endTilePos)
+        {
+            // don't path, run callback delegate
+            onCompleteCallback(null);
+            return;
+        }
 
         if (cachedPaths.TryGetValue((startTilePos, endTilePos), out Stack<Vector2> result))
         {
@@ -56,51 +59,11 @@ public class Pathfinder : MonoBehaviour
             return;
         }
 
-        if (latestQueuedPaths.ContainsKey(callingObject.GetInstanceID()))
-        {
-            latestQueuedPaths[callingObject.GetInstanceID()].Cancelled = true;
-        }
-
         QueuedPath pathInfo = new QueuedPath(startTilePos, endTilePos, callingObject, onCompleteCallback);
 
         queuedPaths.Enqueue(pathInfo);
-        latestQueuedPaths[callingObject.GetInstanceID()] = pathInfo;
 
         enabled = true;
-    }
-
-    /// <summary>
-    /// Cancels all pending paths for this object.
-    /// </summary>
-    /// <param name="caller">The caller requesting the cancel.</param>
-    public void CancelObject(GameObject caller)
-    {
-        if (latestQueuedPaths.ContainsKey(caller.GetInstanceID()))
-        {
-            latestQueuedPaths[caller.GetInstanceID()].Cancelled = true;
-        }
-    }
-
-    /// <summary>
-    /// Tries to retrieve a request from the path request collection.
-    /// </summary>
-    /// <param name="requester">The object performing the request.</param>
-    /// <param name="result">The result of the request.</param>
-    /// <returns>True if a request was found, false if not.</returns>
-    public bool TryGetRequest(GameObject requester, out (Vector2Int Start, Vector2Int End) result)
-    {
-        bool tryResult = latestQueuedPaths.TryGetValue(requester.GetInstanceID(), out QueuedPath foundValue);
-
-        if (tryResult)
-        {
-            result = (foundValue.StartPos, foundValue.EndPos);
-        }
-        else
-        {
-            result = (Vector2Int.zero, Vector2Int.zero);
-        }
-
-        return tryResult;
     }
 
     private void Awake()
@@ -109,18 +72,38 @@ public class Pathfinder : MonoBehaviour
 
         CollectTiles();
 
-        BeginPathingThread();
+        BeginPathingThreads();
     }
 
     private void Update()
     {
+        // loop through each path task
+        foreach (PathTask task in activePathTasks)
+        {
+            // if there are paths to generate and task isn't in use
+            if (queuedPaths.Count > 0 && !task.IsPathing)
+            {
+                if (queuedPaths.TryDequeue(out QueuedPath result))
+                {
+                    task.Path(result);
+                }
+            }
+        }
+
         while (completedPathsQueue.Count > 0)
         {
             if (completedPathsQueue.TryDequeue(out (QueuedPath PathInfo, Stack<Vector2> Path) result))
             {
-                if (!result.PathInfo.Cancelled)
+                if (result.PathInfo.Caller != null)
                 {
                     result.PathInfo.Callback?.Invoke(result.Path);
+
+                    // if path exists
+                    if (result.Path != null)
+                    {
+                        //add to cache
+                        CachePath(result.PathInfo.StartPos, result.PathInfo.EndPos, result.Path);
+                    }
                 }
             }
         }
@@ -128,7 +111,10 @@ public class Pathfinder : MonoBehaviour
 
     private void OnDestroy()
     {
-        cancellationSource.Cancel();
+        foreach (PathTask task in activePathTasks)
+        {
+            task.Dispose();
+        }
     }
 
     private void CollectTiles()
@@ -148,59 +134,20 @@ public class Pathfinder : MonoBehaviour
         }
     }
 
-    private void BeginPathingThread()
+    private void BeginPathingThreads()
     {
-        CancellationToken cancellationToken = cancellationSource.Token;
-
-        Thread thread = new Thread(new ParameterizedThreadStart(ProcessPaths));
-        thread.Start(cancellationToken);
-    }
-
-    private void PathFinished()
-    {
-        if (queuedPaths.TryDequeue(out QueuedPath path))
+        for (int i = 0; i < workerThreadCount; i++)
         {
-            // cache path
-            CachePath(path.StartPos, path.EndPos, currentPath.Path);
+            PathTask pathTask = new PathTask(threadSafeTiles);
+            pathTask.OnPathComplete += OnPathComplete;
 
-            // invoke callback
-            completedPathsQueue.Enqueue((path, currentPath.Path));
-
-            // reset path to null
-            currentPath = null;
-
-            // remove path from dictionary
-            latestQueuedPaths.TryRemove(path.CallerID, out _);
+            activePathTasks.Add(pathTask);
         }
     }
 
-    private void BeginNewPath()
+    private void OnPathComplete(QueuedPath pathInfo, Stack<Vector2> path)
     {
-        if (queuedPaths.Count > 0)
-        {
-            // peek at first
-            queuedPaths.TryPeek(out QueuedPath path);
-
-            while (path.Cancelled)
-            {
-                // skip current peek
-                queuedPaths.TryDequeue(out _);
-
-                // peek at next
-                queuedPaths.TryPeek(out path);
-            }
-
-            // create new path instance
-            currentPath = new AStar(threadSafeTiles, path.StartPos, path.EndPos);
-
-            // begin calculation
-            currentPath.RunAlgorithm();
-        }
-        else
-        {
-            // sleep so not constantly calculating
-            Thread.Sleep(noPathsSleepTime);
-        }
+        completedPathsQueue.Enqueue((pathInfo, path));
     }
 
     private void CachePath(Vector2Int startPos, Vector2Int endPos, Stack<Vector2> path)
@@ -224,27 +171,5 @@ public class Pathfinder : MonoBehaviour
         {
             cachedPaths.TryAdd((startPos, endPos), path);
         }
-    }
-
-    private void ProcessPaths(object param)
-    {
-        Debug.Log("Begin path thread");
-
-        CancellationToken token = (CancellationToken)param;
-
-        while (!token.IsCancellationRequested)
-        {
-            if (currentPath is null)
-            {
-                BeginNewPath();
-            }
-
-            if (currentPath != null && currentPath.FinishedCalculating)
-            {
-                PathFinished();
-            }
-        }
-
-        Debug.Log("Exited path thread");
     }
 }

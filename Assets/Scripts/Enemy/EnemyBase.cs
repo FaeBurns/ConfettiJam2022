@@ -286,21 +286,8 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
         // check if we should repath
         if (scheduledRepathTime <= Time.time)
         {
-            // if there is a path request being made for this object
-            if (Pathfinder.TryGetRequest(gameObject, out (Vector2Int Start, Vector2Int End) result))
-            {
-                // if the path does not end up at the same position a recalculation would end up at
-                if (result.End != AStar.ConvertToTileSpace(LastPlayerPosition))
-                {
-                    // requested path is not ideal, request one
-                    MoveToPosition(LastPlayerPosition);
-                }
-            }
-            else
-            {
-                // no request path found, request one
-                MoveToPosition(LastPlayerPosition);
-            }
+            // request path
+            MoveToPosition(LastPlayerPosition);
         }
     }
 
@@ -456,8 +443,6 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
 
     private void OnDeath()
     {
-        Pathfinder.CancelObject(gameObject);
-
         Destroy(Instantiate(deathParticlePrefab, transform.position, Quaternion.identity), 1);
 
         TimeManager.Add(timeReward);

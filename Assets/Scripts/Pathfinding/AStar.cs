@@ -97,13 +97,21 @@ public class AStar
     {
         while (openList.Count > 0 && Path == null)
         {
-            List<Node> neighbours = FindNeighbors(currentNode.Position);
+            RunAlgorithInnerStep();
+        }
 
-            ExamineNeighbors(neighbours, currentNode);
+        FinishedCalculating = true;
+    }
 
-            UpdateCurrentTile(ref currentNode);
-
-            Path = GeneratePath(currentNode);
+    /// <summary>
+    /// Runs a single step of the algorithm.
+    /// </summary>
+    public void RunAlgorithmStep()
+    {
+        if (openList.Count > 0 && Path == null)
+        {
+            RunAlgorithInnerStep();
+            return;
         }
 
         FinishedCalculating = true;
@@ -119,13 +127,7 @@ public class AStar
         int index = 0;
         while (openList.Count > 0 && Path == null)
         {
-            List<Node> neighbours = FindNeighbors(currentNode.Position);
-
-            ExamineNeighbors(neighbours, currentNode);
-
-            UpdateCurrentTile(ref currentNode);
-
-            Path = GeneratePath(currentNode);
+            RunAlgorithInnerStep();
 
             index++;
             if (index >= maxStepsPerCycle)
@@ -137,6 +139,17 @@ public class AStar
         }
 
         FinishedCalculating = true;
+    }
+
+    private void RunAlgorithInnerStep()
+    {
+        List<Node> neighbours = FindNeighbors(currentNode.Position);
+
+        ExamineNeighbors(neighbours, currentNode);
+
+        UpdateCurrentTile(ref currentNode);
+
+        Path = GeneratePath(currentNode);
     }
 
     private List<Node> FindNeighbors(Vector2Int parentPosition)

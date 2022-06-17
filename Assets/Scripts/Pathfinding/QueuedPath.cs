@@ -3,7 +3,7 @@
 /// <summary>
 /// Holds information about a queued pathfinder path.
 /// </summary>
-public class QueuedPath
+public struct QueuedPath
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="QueuedPath"/> class.
@@ -16,7 +16,7 @@ public class QueuedPath
     {
         StartPos = startPos;
         EndPos = endPos;
-        CallerID = caller.GetInstanceID();
+        Caller = caller;
         Callback = callback;
     }
 
@@ -24,9 +24,7 @@ public class QueuedPath
 
     public Vector2Int EndPos { get; private set; }
 
-    public int CallerID { get; private set; }
+    public GameObject Caller { get; private set; }
 
     public Pathfinder.OnPathFoundDelegate Callback { get; private set; }
-
-    public bool Cancelled { get; set; }
 }
