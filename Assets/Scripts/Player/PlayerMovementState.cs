@@ -2,6 +2,5 @@
 {
     Normal,
     Dash,
-    Dead,
-    Disabled
+    Dead
 }

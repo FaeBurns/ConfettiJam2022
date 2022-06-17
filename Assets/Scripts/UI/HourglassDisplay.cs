@@ -23,9 +23,9 @@ public class HourglassDisplay : ReferenceResolvedBehaviour
     [Header("Format strings")]
     [SerializeField] private string multiplierFormatString;
 
-    private void Update()
+    public void SetTime(float time)
     {
-        float alpha = timeManager.Time / timeManager.MaxTime;
+        float alpha = time / timeManager.MaxTime;
 
         float spentPos = Mathf.Lerp(spentMinMax.x, spentMinMax.y, alpha);
         float leftPos = Mathf.Lerp(leftMinMax.x, leftMinMax.y, alpha);
@@ -33,8 +33,13 @@ public class HourglassDisplay : ReferenceResolvedBehaviour
         spentTransform.anchoredPosition = new Vector2(0, spentPos);
         leftTransform.anchoredPosition = new Vector2(0, leftPos);
 
-        timeText.text = new TimeSpan(0, 0, Mathf.FloorToInt(timeManager.Time)).ToString("mm\\:ss");
+        timeText.text = new TimeSpan(0, 0, Mathf.FloorToInt(time)).ToString("mm\\:ss");
 
         multiplierText.text = string.Format(multiplierFormatString, timeManager.AdditionMultiplier.ToString("0.00"));
+    }
+
+    private void Update()
+    {
+        SetTime(timeManager.Time);
     }
 }

@@ -34,7 +34,7 @@ public class PlayerMovement : ReferenceResolvedBehaviour
     public PlayerMovementState MovementState
     {
         get => movementState;
-        private set
+        set
         {
             if (movementState != value)
             {
@@ -57,6 +57,11 @@ public class PlayerMovement : ReferenceResolvedBehaviour
 
     private void Update()
     {
+        if (MovementState == PlayerMovementState.Dead)
+        {
+            return;
+        }
+
         Vector2 rawInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
         if (MovementState == PlayerMovementState.Normal)

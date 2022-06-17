@@ -9,7 +9,7 @@ public class GameSettings : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        DontDestroyOnLoad(this);
+        DontDestroyOnLoad(gameObject);
 
         SceneManager.sceneLoaded += SceneManager_sceneLoaded;
     }
@@ -19,7 +19,14 @@ public class GameSettings : MonoBehaviour
         // if not first scene
         if (scene.buildIndex != 0)
         {
+            // apply settings
             FindObjectOfType<TimeResourceManager>().SetTimeFromSettings(time);
+
+            // destroy self afterwards
+            Destroy(gameObject);
+
+            // unsubscribe from event
+            SceneManager.sceneLoaded -= SceneManager_sceneLoaded;
         }
     }
 

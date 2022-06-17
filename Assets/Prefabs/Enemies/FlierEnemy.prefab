@@ -187,7 +187,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 4
+  m_Radius: 3
 --- !u!114 &8583179105530258441
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -249,9 +249,8 @@ MonoBehaviour:
   damage: 10
   tagFilter:
   - Player
-  desiredSource: 2147483647
-  blameObject: {fileID: 8583179104930000645}
   damageType: 0
+  <BlameObject>k__BackingField: {fileID: 8583179104930000645}
 --- !u!58 &8583179105826956308
 CircleCollider2D:
   m_ObjectHideFlags: 0

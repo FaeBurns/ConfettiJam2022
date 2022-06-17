@@ -9,9 +9,22 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerMovement))]
 public class PlayerHealth : ReferenceResolvedBehaviour
 {
+    private bool alive = true;
+
     [AutoReference] private TimeResourceManager timeManager;
     [BindComponent] private PlayerMovement playerMovement;
+    [BindComponent] private PlayerAttack playerAttack;
     [BindComponent] private Damageable damageable;
+
+    /// <summary>
+    /// Death event.
+    /// </summary>
+    public event Action OnDeath;
+
+    private void Awake()
+    {
+        ReferenceStore.ReplaceReference(this);
+    }
 
     /// <inheritdoc/>
     public override void Start()
@@ -26,6 +39,11 @@ public class PlayerHealth : ReferenceResolvedBehaviour
 
     private void OnDamaged(float amount, GameObject source, DamageType type)
     {
+        if (playerMovement.MovementState == PlayerMovementState.Dead)
+        {
+            return;
+        }
+
         // immune if dashing
         if (playerMovement.MovementState != PlayerMovementState.Dash)
         {
@@ -36,5 +54,15 @@ public class PlayerHealth : ReferenceResolvedBehaviour
     private void RecheckTime(float obj)
     {
         damageable.Health = timeManager.Time;
+
+        if (damageable.Health <= 0 && alive)
+        {
+            alive = false;
+
+            playerAttack.enabled = false;
+            playerMovement.MovementState = PlayerMovementState.Dead;
+
+            OnDeath?.Invoke();
+        }
     }
 }

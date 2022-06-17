@@ -12,7 +12,7 @@ public class BoomerangProjectile : ReferenceResolvedBehaviour
     private float startTime;
     private Vector2 offset;
     private float rotationOffset;
-    private float distanceScale;
+    private float distanceScale = 1f;
 
     [BindComponent] private ContactDamageDealer damager;
 
@@ -54,7 +54,10 @@ public class BoomerangProjectile : ReferenceResolvedBehaviour
         offset = transform.position;
         rotationOffset = transform.rotation.eulerAngles.z;
 
-        distanceScale = Mathf.Max(Vector2.Distance(transform.position, PlayerObject.transform.position), minimumDistanceScale);
+        if (PlayerObject != null)
+        {
+            distanceScale = Mathf.Max(Vector2.Distance(transform.position, PlayerObject.transform.position), minimumDistanceScale);
+        }
 
         damager.BlameObject = Spawner;
 

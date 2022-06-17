@@ -72,7 +72,7 @@ public class TimeResourceManager : MonoBehaviour
         amount = ClampAmount(amount);
         Time -= amount;
         TimeRemoved?.Invoke(amount);
-        TimeChanged?.Invoke(amount);
+        TimeChanged?.Invoke(-amount);
     }
 
     private float ClampAmount(float amount)
@@ -101,7 +101,7 @@ public class TimeResourceManager : MonoBehaviour
         Time -= drain;
 
         // invoke event
-        TimeChanged?.Invoke(drain);
+        TimeChanged?.Invoke(-drain);
     }
 
     public void AddMultiplier(float multiplierAmount)

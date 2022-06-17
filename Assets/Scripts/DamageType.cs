@@ -4,12 +4,12 @@
 public enum DamageType
 {
     /// <summary>
-    /// Melee damage type.
+    /// Damage caused by melee attackers.
     /// </summary>
     Melee,
 
     /// <summary>
-    /// Ranged damage type.
+    /// Damage cause by ranged attackers.
     /// </summary>
     Ranged,
 }

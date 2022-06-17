@@ -89,6 +89,7 @@ GameObject:
   - component: {fileID: 4011553189076627036}
   - component: {fileID: 4011553189076627037}
   - component: {fileID: 4011553189076627038}
+  - component: {fileID: 1339851671}
   m_Layer: 0
   m_Name: WalkerEnemy
   m_TagString: Untagged
@@ -126,8 +127,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6223aeba4c10674e86de32b17360086, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  <Health>k__BackingField: 5
-  <MaxHealth>k__BackingField: 5
+  <Health>k__BackingField: 10
+  <MaxHealth>k__BackingField: 10
 --- !u!50 &4011553189076627037
 Rigidbody2D:
   serializedVersion: 4
@@ -167,7 +168,7 @@ MonoBehaviour:
   attackSprite: {fileID: 21300000, guid: 72531a1820e748d4f9ec8947898fac9e, type: 3}
   deathParticlePrefab: {fileID: 7394970583881374140, guid: e9a497b27c0cb8d43b36325556fa1226, type: 3}
   timeReward: 5
-  knockbackRecieved: 0.5
+  knockbackRecieved: 4
   attackRadius: 7
   projectileThrowCount: 3
   projectileThrowInterval: 0.2
@@ -175,6 +176,22 @@ MonoBehaviour:
   projectileLaunchTransform: {fileID: 4011553188984659667}
   attackPrepareTime: 0.5
   projectiles: []
+--- !u!58 &1339851671
+CircleCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4011553189076627040}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  serializedVersion: 2
+  m_Radius: 0.5
 --- !u!1 &4011553189956503772
 GameObject:
   m_ObjectHideFlags: 0
@@ -305,7 +322,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 4
+  m_Radius: 3
 --- !u!114 &4011553190893115581
 MonoBehaviour:
   m_ObjectHideFlags: 0
