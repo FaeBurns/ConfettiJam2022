@@ -89,6 +89,12 @@ public class FlierEnemy : EnemyBase
 
     private IEnumerator Dash()
     {
+        if(TargetPlayer == null)
+        {
+            State = EnemyState.Idle;
+            yield break;
+        }
+
         manualVel = (TargetPlayer.transform.position - transform.position).normalized * dashSpeed;
 
         float endTime = Time.time + dashTime;

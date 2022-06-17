@@ -16,7 +16,7 @@ public class PathTask : IDisposable
 
     private readonly object locker = new object();
     private AStar currentPath = null;
-    private QueuedPath? queuedPath = null;
+    private QueuedPath? pathInfo = null;
 
     private TimeoutTimer timeout = null;
 
@@ -63,13 +63,30 @@ public class PathTask : IDisposable
                 return;
             }
 
-            queuedPath = path;
+            pathInfo = path;
             currentPath = new AStar(tilemap, path.StartPos, path.EndPos);
 
             timeout?.Cancel();
 
             timeout = new TimeoutTimer(PathTimeoutTime);
+            timeout.TimeoutAction += Timeout_TimeoutAction;
             timeout.Begin();
+        }
+    }
+
+    private void Timeout_TimeoutAction()
+    {
+        lock (locker)
+        {
+            if (currentPath != null)
+            {
+                Debug.Log("Timed out trying to generate path");
+
+                OnPathComplete?.Invoke(pathInfo.Value, null);
+
+                currentPath = null;
+                pathInfo = null;
+            }
         }
     }
 
@@ -77,26 +94,32 @@ public class PathTask : IDisposable
     {
         while (!cancellationToken.IsCancellationRequested)
         {
+            bool shouldSleep = false;
             lock (locker)
             {
                 // if there is no path to run
                 if (currentPath == null)
                 {
-                    // give delay so not constantly active
-                    Thread.Sleep(NoPathSleepTime);
-
                     // skip rest of this loop
-                    continue;
+                    shouldSleep = true;
                 }
+            }
 
-                // run step of algorithm
-                currentPath.RunAlgorithmStep();
+            if (shouldSleep)
+            {
+                // give delay so not constantly active
+                Thread.Sleep(NoPathSleepTime);
 
-                // check if finished pathing
-                if (currentPath.FinishedCalculating)
-                {
-                    PathCompleted();
-                }
+                continue;
+            }
+
+            // run step of algorithm
+            currentPath.RunAlgorithmStep();
+
+            // check if finished pathing
+            if (currentPath.FinishedCalculating)
+            {
+                PathCompleted();
             }
         }
 
@@ -105,11 +128,14 @@ public class PathTask : IDisposable
 
     private void PathCompleted()
     {
-        currentPath = null;
-        queuedPath = null;
+        lock (locker)
+        {
+            timeout?.Cancel();
 
-        timeout?.Cancel();
+            OnPathComplete?.Invoke(pathInfo.Value, currentPath.Path);
 
-        OnPathComplete?.Invoke(queuedPath.Value, currentPath.Path);
+            currentPath = null;
+            pathInfo = null;
+        }
     }
 }

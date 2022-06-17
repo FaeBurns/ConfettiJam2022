@@ -30,6 +30,7 @@ public class PlayerAttack : ReferenceResolvedBehaviour
     [SerializeField] private float rangedSpread = 5f;
     [SerializeField] private float rangedSpreadDeviation = 1f;
     [SerializeField] private float rangedTimeCost = 1f;
+    [SerializeField] private float rangedAngleOffset = -3f;
 
     [Header("Animation")]
     [SerializeField] private Animator meleeAnimator;
@@ -98,6 +99,8 @@ public class PlayerAttack : ReferenceResolvedBehaviour
 
     private void DoRangedAttack(float targetAngle)
     {
+        targetAngle += rangedAngleOffset;
+
         // if still on cooldown
         if (cooldownFinishedTime > Time.time)
         {

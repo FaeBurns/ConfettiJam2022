@@ -12,16 +12,20 @@ public class ContactDamageDealer : MonoBehaviour
 {
     [SerializeField] private float damage;
     [SerializeField] private string[] tagFilter = { "Player" };
-    [SerializeField] private ContactDamageSource desiredSource;
 
-    [Tooltip("The object to blame for the damage")]
-    [SerializeField] private GameObject blameObject;
 
     [SerializeField] private DamageType damageType;
 
+    /// <summary>
+    /// Gets or sets the object to blame for the damage.
+    /// </summary>
+    [field: Tooltip("The object to blame for the damage")]
+    [field: SerializeField] 
+    public GameObject BlameObject { get; set; }
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (Validate(collision.collider, ContactDamageSource.Collide))
+        if (Validate(collision.collider))
         {
             DealDamage(collision.gameObject);
         }
@@ -29,25 +33,15 @@ public class ContactDamageDealer : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (Validate(collision, ContactDamageSource.Trigger))
+        if (Validate(collision))
         {
             DealDamage(collision.gameObject);
         }
     }
 
-    private bool Validate(Collider2D collider, ContactDamageSource source)
+    private bool Validate(Collider2D collider)
     {
-        if (!tagFilter.Contains(collider.gameObject.tag))
-        {
-            return false;
-        }
-
-        if (desiredSource == (ContactDamageSource.Collide | ContactDamageSource.Trigger))
-        {
-            return true;
-        }
-
-        return (source & desiredSource) == source;
+        return tagFilter.Contains(collider.gameObject.tag);
     }
 
     private void DealDamage(GameObject target)
@@ -56,7 +50,7 @@ public class ContactDamageDealer : MonoBehaviour
 
         if (damageable != null)
         {
-            damageable.DealDamage(damage, blameObject, damageType);
+            damageable.DealDamage(damage, BlameObject, damageType);
         }
     }
 }

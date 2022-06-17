@@ -3,7 +3,6 @@
 /// <summary>
 /// The types of contact that can cause damage.
 /// </summary>
-[Flags]
 public enum ContactDamageSource
 {
     /// <summary>
@@ -14,5 +13,5 @@ public enum ContactDamageSource
     /// <summary>
     /// Damage caused by overlapping.
     /// </summary>
-    Trigger,
+    Trigger
 }

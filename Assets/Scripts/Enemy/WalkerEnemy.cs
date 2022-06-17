@@ -56,6 +56,7 @@ public class WalkerEnemy : EnemyBase
             BoomerangProjectile projectile = newObject.GetComponent<BoomerangProjectile>();
 
             projectile.PlayerObject = TargetPlayer;
+            projectile.Spawner = gameObject;
             projectile.Finished += Projectile_Finished;
 
             projectiles.Add(newObject);

@@ -37,8 +37,6 @@ public class Pathfinder : MonoBehaviour
     /// <param name="onCompleteCallback">Callback to be executed when the path is found.</param>
     public void FindPath(Vector2 startPos, Vector2 endPos, GameObject callingObject, OnPathFoundDelegate onCompleteCallback)
     {
-        Debug.Log($"Generating new path for object {callingObject.name}");
-
         Vector2Int startTilePos = AStar.ConvertToTileSpace(startPos);
         Vector2Int endTilePos = AStar.ConvertToTileSpace(endPos);
 

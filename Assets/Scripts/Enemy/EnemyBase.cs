@@ -12,6 +12,7 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
 {
     private Coroutine attackCoroutine = null;
     private Vector2 cachedLastPlayerPosition = Vector2.zero;
+    private bool canRepath = false;
     private float scheduledRepathTime = 0f;
     private EnemyPathData? pathData;
     private PlayerPositionReporter targetPlayerPositionReporter;
@@ -34,7 +35,7 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     [SerializeField] private float attackRadius;
 
     /// <summary>
-    /// Gets or Sets the <see cref=""/>.
+    /// Gets or Sets the <see cref="TimeManager"/>. component reference.
     /// </summary>
     [AutoReference] protected TimeResourceManager TimeManager { get; set; }
 
@@ -90,18 +91,6 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
 
             return null;
         }
-
-        set
-        {
-            if (value != null)
-            {
-                targetPlayerPositionReporter = value.GetComponent<PlayerPositionReporter>();
-            }
-            else
-            {
-                targetPlayerPositionReporter = null;
-            }
-        }
     }
 
     private Vector2 LastPlayerPosition
@@ -141,12 +130,13 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     /// <param name="playerObject">The player object entering range.</param>
     public virtual void OnPlayerEnterDetectionRange(GameObject playerObject)
     {
+        targetPlayerPositionReporter = playerObject.GetComponent<PlayerPositionReporter>();
+
         switch (State)
         {
             case EnemyState.Idle:
             case EnemyState.DirectMove:
-                targetPlayerPositionReporter = playerObject.GetComponent<PlayerPositionReporter>();
-                MoveToPosition(targetPlayerPositionReporter.transform.position);
+                MoveToPosition(LastPlayerPosition);
                 State = EnemyState.FollowPath;
                 break;
             default:
@@ -221,7 +211,7 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
                 FollowPath();
                 break;
             case EnemyState.Idle:
-                Rb.MovePosition(Rb.position);
+                Rb.velocity = Vector2.zero;
                 break;
         }
     }
@@ -284,8 +274,10 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     protected void TryRepath()
     {
         // check if we should repath
-        if (scheduledRepathTime <= Time.time)
+        if (scheduledRepathTime <= Time.time && canRepath)
         {
+            canRepath = false;
+
             // request path
             MoveToPosition(LastPlayerPosition);
         }
@@ -298,6 +290,9 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     /// <param name="endPos">The end position of the path.</param>
     protected virtual void BeginPath(Stack<Vector2> path, Vector2 endPos)
     {
+        scheduledRepathTime = Time.time + repathTime;
+        canRepath = true;
+
         if (path == null)
         {
             Debug.Log("Enemy path was null");
@@ -320,8 +315,6 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
 
         pathData = new EnemyPathData(path, endPos);
 
-        scheduledRepathTime = Time.time + repathTime;
-
         State = EnemyState.FollowPath;
     }
 
@@ -335,7 +328,7 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     {
         if (damageType == DamageType.Melee)
         {
-            Vector2 direction = transform.position - source.transform.position;
+            Vector2 direction = (transform.position - source.transform.position).normalized;
 
             Rb.AddForce(direction * knockbackRecieved, ForceMode2D.Impulse);
         }

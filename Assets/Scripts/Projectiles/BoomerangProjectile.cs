@@ -9,17 +9,17 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class BoomerangProjectile : ReferenceResolvedBehaviour
 {
-    private float endTime;
     private float startTime;
     private Vector2 offset;
     private float rotationOffset;
     private float distanceScale;
 
-    [BindComponent] private Rigidbody2D rb;
+    [BindComponent] private ContactDamageDealer damager;
 
     [SerializeField] private float duration = 2f;
     [SerializeField] private AnimationCurve distanceCurve;
     [SerializeField] private AnimationCurve rotationCurve;
+    [SerializeField] private AnimationCurve scaleCurve;
     [SerializeField] private float minimumDistanceScale = 5f;
     [SerializeField] private float rotationScale = 60f;
 
@@ -39,39 +39,41 @@ public class BoomerangProjectile : ReferenceResolvedBehaviour
     /// </summary>
     public GameObject PlayerObject { get; set; }
 
+    /// <summary>
+    /// Gets or sets the object that spawns this projectile.
+    /// </summary>
+    public GameObject Spawner { get; set; }
+
     /// <inheritdoc/>
     public override void Start()
     {
         base.Start();
 
         startTime = Time.time;
-        endTime = startTime + duration;
 
         offset = transform.position;
         rotationOffset = transform.rotation.eulerAngles.z;
 
         distanceScale = Mathf.Max(Vector2.Distance(transform.position, PlayerObject.transform.position), minimumDistanceScale);
 
-        Debug.Log($"rotational offset: {rotationOffset}");
+        damager.BlameObject = Spawner;
+
+        Destroy(gameObject, duration);
     }
 
     private void Update()
     {
-        // if time is up
-        if (endTime <= Time.time)
-        {
-            // remove self
-            Destroy(gameObject);
-        }
+        float time = (Time.time - startTime) / duration;
 
-        Vector2 distance = new Vector2(distanceCurve.Evaluate(Time.time - startTime), 0) * distanceScale;
-        float rotation = rotationCurve.Evaluate(Time.time - startTime) * rotationScale;
+        Vector2 distance = new Vector2(distanceCurve.Evaluate(time), 0) * distanceScale;
+        float rotation = rotationCurve.Evaluate(time) * rotationScale;
         Vector2 position = distance.Rotate(Vector2.zero, rotation + rotationOffset);
 
         transform.position = position + offset;
 
         smallHandTransform.rotation = Quaternion.Euler(smallHandTransform.rotation.eulerAngles + new Vector3(0, 0, smallHandRotationSpeed * Time.deltaTime));
         bigHandTransform.rotation = Quaternion.Euler(bigHandTransform.rotation.eulerAngles + new Vector3(0, 0, bigHandRotationSpeed * Time.deltaTime));
+        transform.localScale = Vector3.Lerp(Vector3.zero, Vector3.one, scaleCurve.Evaluate(time));
     }
 
     private void OnDestroy()

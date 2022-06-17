@@ -15,6 +15,11 @@ public class TimeoutTimer
         this.timeout = timeout;
     }
 
+    ~TimeoutTimer()
+    {
+        cancellation.Dispose();
+    }
+
     public void Begin()
     {
         Task.Run(() => TimeoutTask(cancellation.Token), cancellation.Token);
@@ -22,14 +27,12 @@ public class TimeoutTimer
 
     private async Task TimeoutTask(CancellationToken token)
     {
-        await Task.Delay(timeout);
+        await Task.Delay(timeout, token);
 
         if (!token.IsCancellationRequested)
         {
             TimeoutAction?.Invoke();
         }
-
-        cancellation.Dispose();
     }
 
     public void Cancel()
