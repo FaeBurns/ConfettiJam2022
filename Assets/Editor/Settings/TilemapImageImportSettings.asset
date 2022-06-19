@@ -12,6 +12,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04b0be763c3b65d4498f4095db76f598, type: 3}
   m_Name: TilemapImageImportSettings
   m_EditorClassIdentifier: 
-  <Mapping>k__BackingField: []
-  <SourceImage>k__BackingField: {fileID: 0}
+  <Mapping>k__BackingField:
+  - <Color>k__BackingField:
+      serializedVersion: 2
+      rgba: 4279332935
+    <Tile>k__BackingField: {fileID: 11400000, guid: a8d3e7e1725159d4ca276f3421a0a110, type: 2}
+  - <Color>k__BackingField:
+      serializedVersion: 2
+      rgba: 4279132477
+    <Tile>k__BackingField: {fileID: 11400000, guid: a8d3e7e1725159d4ca276f3421a0a110, type: 2}
+  - <Color>k__BackingField:
+      serializedVersion: 2
+      rgba: 4279541452
+    <Tile>k__BackingField: {fileID: 11400000, guid: 753a62745c0124d40979526a70edd20b, type: 2}
+  - <Color>k__BackingField:
+      serializedVersion: 2
+      rgba: 4279264641
+    <Tile>k__BackingField: {fileID: 11400000, guid: 753a62745c0124d40979526a70edd20b, type: 2}
+  - <Color>k__BackingField:
+      serializedVersion: 2
+      rgba: 4279406938
+    <Tile>k__BackingField: {fileID: 11400000, guid: a8d3e7e1725159d4ca276f3421a0a110, type: 2}
+  - <Color>k__BackingField:
+      serializedVersion: 2
+      rgba: 4278794276
+    <Tile>k__BackingField: {fileID: 11400000, guid: d84614a8983d9be468f557cd416bccb1, type: 2}
+  - <Color>k__BackingField:
+      serializedVersion: 2
+      rgba: 4281744451
+    <Tile>k__BackingField: {fileID: 11400000, guid: d84614a8983d9be468f557cd416bccb1, type: 2}
+  <UnknownColorTile>k__BackingField: {fileID: 11400000, guid: e867a1be0c23d3644b170cb7a143188b, type: 2}
+  <SourceImage>k__BackingField: {fileID: 2800000, guid: 8157ea2f5f19a1e479b67f1fcd2137e4, type: 3}
   <TargetTilemap>k__BackingField: {fileID: 0}

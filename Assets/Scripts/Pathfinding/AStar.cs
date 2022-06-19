@@ -172,7 +172,7 @@ public class AStar
                     if (neighborPosition != startPos && tile && !tile.blocking)
                     {
                         Node neighbor = GetNode(neighborPosition);
-                        neighbor.CostMultiplier = tile.costMult;
+                        neighbor.CostMultiplier = tile.costMult * tile.speed;
                         neighbors.Add(neighbor);
                     }
                 }
