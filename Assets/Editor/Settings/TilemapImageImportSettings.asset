@@ -20,7 +20,7 @@ MonoBehaviour:
   - <Color>k__BackingField:
       serializedVersion: 2
       rgba: 4279132477
-    <Tile>k__BackingField: {fileID: 11400000, guid: a8d3e7e1725159d4ca276f3421a0a110, type: 2}
+    <Tile>k__BackingField: {fileID: 11400000, guid: 7eb731e4ae68e5449a22bde1112b573a, type: 2}
   - <Color>k__BackingField:
       serializedVersion: 2
       rgba: 4279541452
@@ -32,7 +32,7 @@ MonoBehaviour:
   - <Color>k__BackingField:
       serializedVersion: 2
       rgba: 4279406938
-    <Tile>k__BackingField: {fileID: 11400000, guid: a8d3e7e1725159d4ca276f3421a0a110, type: 2}
+    <Tile>k__BackingField: {fileID: 11400000, guid: e608f9c9e1d7b364eb303ada4bfb5a7e, type: 2}
   - <Color>k__BackingField:
       serializedVersion: 2
       rgba: 4278794276
