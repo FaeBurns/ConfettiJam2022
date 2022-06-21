@@ -15,7 +15,7 @@ public class PlayerCameraController : MonoBehaviour
         player = GameObject.FindGameObjectWithTag("Player");
     }
 
-    private void LateUpdate()
+    private void FixedUpdate()
     {
         // get difference between target and self
         Vector3 diff = player.transform.position - transform.position;

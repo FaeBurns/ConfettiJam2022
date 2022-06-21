@@ -9,6 +9,7 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerPositionReporter))]
 public class PlayerMovement : ReferenceResolvedBehaviour
 {
+    private Vector2 rawInput;
     private Vector2 velToMove;
     private PlayerMovementState movementState;
 
@@ -62,21 +63,17 @@ public class PlayerMovement : ReferenceResolvedBehaviour
             return;
         }
 
-        Vector2 rawInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        rawInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
         if (MovementState == PlayerMovementState.Normal)
         {
-            velToMove += 0.1f * speed * rawInput.normalized * Time.deltaTime;
+            velToMove += 0.1f * speed * Time.deltaTime * rawInput.normalized;
             velToMove = Mathf.Min(velToMove.magnitude, 1) * velToMove.normalized;
 
             // if there is any input at all
             if (rawInput.sqrMagnitude > 0f)
             {
                 velToMove = rawInput.normalized * speed;
-            }
-            else
-            {
-                velToMove *= velDrain;
             }
         }
 
@@ -101,6 +98,12 @@ public class PlayerMovement : ReferenceResolvedBehaviour
         {
             // same on normal and dash
             case PlayerMovementState.Normal:
+                if (rawInput.sqrMagnitude <= 0f)
+                {
+                    velToMove *= velDrain;
+                }
+                rb.MovePosition(rb.position + velToMove);
+                break;
             case PlayerMovementState.Dash:
                 rb.MovePosition(rb.position + velToMove);
                 break;

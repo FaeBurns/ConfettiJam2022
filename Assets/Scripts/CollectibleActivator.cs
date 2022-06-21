@@ -9,12 +9,15 @@ public class CollectibleActivator : ReferenceResolvedBehaviour
 {
     private readonly List<GameObject> targets = new List<GameObject>();
 
+    [BindComponent(Child = true)] private SpriteRenderer spriteRenderer;
+
+    [SerializeField] private GameObject particles;
+
     /// <summary>
     /// Gets a value indicating whether there are any targets left.
     /// </summary>
     public bool CanUse => targets.Count == 0;
 
-    /// <inheritdoc/>
     public override void Start()
     {
         base.Start();
@@ -40,10 +43,24 @@ public class CollectibleActivator : ReferenceResolvedBehaviour
     {
         // stop further updates and trigger events.
         enabled = false;
+
+        // update visuals after collision events
+        UpdateVisuals();
     }
 
     private void OnDeath(GameObject target)
     {
         targets.Remove(target);
+        UpdateVisuals();
+    }
+
+    private void UpdateVisuals()
+    {
+        spriteRenderer.color = CanUse ? Color.white : Color.gray;
+
+        if (CanUse)
+        {
+            Instantiate(particles, transform);
+        }
     }
 }

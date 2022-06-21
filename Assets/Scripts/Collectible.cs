@@ -7,6 +7,8 @@ using UnityEngine;
 /// </summary>
 public class Collectible : ReferenceResolvedBehaviour
 {
+    private GameObject particleObj;
+
     [AutoReference] private CollectibleGoalManager goalManager;
 
     [BindComponent(Child = true)] private SpriteRenderer gfx;
@@ -27,7 +29,8 @@ public class Collectible : ReferenceResolvedBehaviour
         if (collision.gameObject.CompareTag("Player") && activator.CanUse)
         {
             OnCollect(gfx.sprite);
-            Destroy(gameObject);
+            Destroy(particleObj);
+            Destroy(gameObject.transform.parent.gameObject);
         }
     }
 }

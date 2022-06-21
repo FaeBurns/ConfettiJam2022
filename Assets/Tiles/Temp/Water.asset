@@ -35,5 +35,5 @@ MonoBehaviour:
   m_Flags: 1
   m_ColliderType: 2
   speed: 0.2
-  costMult: 1
+  costMult: 99999
   blocking: 0

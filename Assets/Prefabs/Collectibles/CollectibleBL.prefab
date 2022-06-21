@@ -61,8 +61,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c30910bbb76a33649ac3a6afc21adb11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scaleMagnitude: 1
-  timescale: 1
 --- !u!1 &8689658331829481466
 GameObject:
   m_ObjectHideFlags: 0
@@ -207,3 +205,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c21d93961811ce84e9ba7dcb76db032a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  particles: {fileID: 5682705197518742525, guid: 47be06765270cf6479c07dde0209e6c2, type: 3}

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 8583179104930000890}
   - component: {fileID: 8583179104930000647}
   - component: {fileID: 8583179104930000888}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: FlierEnemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
