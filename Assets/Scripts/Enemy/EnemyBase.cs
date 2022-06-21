@@ -438,6 +438,10 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     {
         Destroy(Instantiate(deathParticlePrefab, transform.position, Quaternion.identity), 1);
 
+        // reset multiplier drain without adding anything to it
+        TimeManager.AddMultiplier(0);
+
+        // add time
         TimeManager.Add(timeReward);
 
         Destroy(gameObject);

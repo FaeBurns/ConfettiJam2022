@@ -14,7 +14,7 @@ public class Collectible : ReferenceResolvedBehaviour
     [BindComponent(Child = true)] private SpriteRenderer gfx;
     [BindComponent(Parent = true)] private CollectibleActivator activator;
 
-    private event Action<Sprite> OnCollect;
+    public event Action<Sprite> OnCollect;
 
     /// <inheritdoc/>
     public override void Start()
