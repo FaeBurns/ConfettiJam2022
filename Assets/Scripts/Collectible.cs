@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BeanLib.References;
 using UnityEngine;
 
@@ -13,9 +9,8 @@ public class Collectible : ReferenceResolvedBehaviour
 {
     [AutoReference] private CollectibleGoalManager goalManager;
 
-    [Min(1f)]
-    [SerializeField] private float scaleMagnitude;
-    [SerializeField] private float timescale = 1f;
+    [BindComponent(Child = true)] private SpriteRenderer gfx;
+    [BindComponent(Parent = true)] private CollectibleActivator activator;
 
     private event Action<Sprite> OnCollect;
 
@@ -27,16 +22,11 @@ public class Collectible : ReferenceResolvedBehaviour
         OnCollect += goalManager.OnCollect;
     }
 
-    private void Update()
-    {
-        transform.localScale = Vector3.Lerp(Vector3.one, new Vector3(scaleMagnitude, scaleMagnitude, scaleMagnitude), Mathf.Sin(Time.time * timescale));
-    }
-
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag("Player"))
+        if (collision.gameObject.CompareTag("Player") && activator.CanUse)
         {
-            OnCollect(GetComponentInChildren<SpriteRenderer>().sprite);
+            OnCollect(gfx.sprite);
             Destroy(gameObject);
         }
     }

@@ -1,6 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -11,6 +9,13 @@ public class TilemapParser
     private readonly Tilemap tilemap;
     private readonly TileBase unkownColorTile;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TilemapParser"/> class.
+    /// </summary>
+    /// <param name="texture">The texture to parse.</param>
+    /// <param name="mapping">The tile to colour mapping to use.</param>
+    /// <param name="tilemap">The tilemap to write to.</param>
+    /// <param name="unkownColorTile">The tile to use for unknown colours.</param>
     public TilemapParser(Texture2D texture, ColorTileMapping[] mapping, Tilemap tilemap, TileBase unkownColorTile)
     {
         this.texture = texture;
@@ -19,6 +24,9 @@ public class TilemapParser
         this.unkownColorTile = unkownColorTile;
     }
 
+    /// <summary>
+    /// Parse the texture and write to the tilemap.
+    /// </summary>
     public void Parse()
     {
         TileImageReader reader = new TileImageReader(texture);

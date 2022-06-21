@@ -44,6 +44,11 @@ public class WalkerEnemy : EnemyBase
 
         State = EnemyState.Attack;
 
+        if (TargetPlayer == null)
+        {
+            yield break;
+        }
+
         float rotationAngle = Vector2.SignedAngle(Vector2.right, TargetPlayer.transform.position - projectileLaunchTransform.position);
         Quaternion rotation = Quaternion.Euler(0, 0, rotationAngle);
 

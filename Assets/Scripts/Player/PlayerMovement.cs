@@ -66,7 +66,7 @@ public class PlayerMovement : ReferenceResolvedBehaviour
 
         if (MovementState == PlayerMovementState.Normal)
         {
-            velToMove += 0.1f * speed * rawInput.normalized;
+            velToMove += 0.1f * speed * rawInput.normalized * Time.deltaTime;
             velToMove = Mathf.Min(velToMove.magnitude, 1) * velToMove.normalized;
 
             // if there is any input at all

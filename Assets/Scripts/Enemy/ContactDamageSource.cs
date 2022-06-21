@@ -1,6 +1,4 @@
-﻿using System;
-
-/// <summary>
+﻿/// <summary>
 /// The types of contact that can cause damage.
 /// </summary>
 public enum ContactDamageSource

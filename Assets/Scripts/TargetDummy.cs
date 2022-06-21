@@ -1,5 +1,4 @@
 ﻿using BeanLib.References;
-using System.Collections;
 using UnityEngine;
 
 /// <summary>

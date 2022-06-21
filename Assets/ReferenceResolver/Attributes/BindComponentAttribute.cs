@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using UnityEngine;
 
 namespace BeanLib.References
@@ -14,6 +15,16 @@ namespace BeanLib.References
         /// </summary>
         public bool Child { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="IResolver"/> should look for the componet on siblings instead.
+        /// </summary>
+        public bool Sibling { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="IResolver"/> should look for the component on its parent instead.
+        /// </summary>
+        public bool Parent { get; set; }
+
         /// <inheritdoc/>
         public void Resolve(object hostObject, MemberInfo member)
         {
@@ -21,13 +32,23 @@ namespace BeanLib.References
             {
                 Component component;
 
+                Type memberType = ResolverUtility.GetMemberType(member);
+
                 if (Child)
                 {
-                    component = caller.GetComponentInChildren(ResolverUtility.GetMemberType(member));
+                    component = caller.GetComponentInChildren(memberType);
+                }
+                else if (Sibling)
+                {
+                    component = caller.transform.parent.gameObject.GetComponentInChildren(memberType);
+                }
+                else if (Parent)
+                {
+                    component = caller.GetComponentInParent(memberType);
                 }
                 else
                 {
-                    component = caller.GetComponent(ResolverUtility.GetMemberType(member));
+                    component = caller.GetComponent(memberType);
                 }
 
                 ResolverUtility.SetMemberValue(hostObject, component, member);

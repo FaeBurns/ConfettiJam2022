@@ -55,6 +55,11 @@ public class TimeResourceManager : MonoBehaviour
     /// <param name="amount">The amount of time to add.</param>
     public void Add(float amount)
     {
+        if (!enabled)
+        {
+            return;
+        }
+
         amount *= AdditionMultiplier;
 
         amount = ClampAmount(amount);
@@ -69,10 +74,37 @@ public class TimeResourceManager : MonoBehaviour
     /// <param name="amount">The amount of time to drain.</param>
     public void Drain(float amount)
     {
+        if (!enabled)
+        {
+            return;
+        }
+
         amount = ClampAmount(amount);
         Time -= amount;
         TimeRemoved?.Invoke(amount);
         TimeChanged?.Invoke(-amount);
+    }
+
+    /// <summary>
+    /// Adds to the multiplier.
+    /// </summary>
+    /// <param name="multiplierAmount">The amount to add.</param>
+    public void AddMultiplier(float multiplierAmount)
+    {
+        AdditionMultiplier = Mathf.Clamp(AdditionMultiplier + multiplierAmount, 1, multiplierMax);
+
+        multiplierDrainStartTime = UnityEngine.Time.time + multiplierDrainDelay;
+    }
+
+    /// <summary>
+    /// Gets the maximum time from <see cref="GlobalSettings"/>.
+    /// </summary>
+    public void SetTimeFromSettings()
+    {
+        float time = GameSettings.Time;
+
+        MaxTime = time;
+        Time = time;
     }
 
     private float ClampAmount(float amount)
@@ -86,7 +118,7 @@ public class TimeResourceManager : MonoBehaviour
     {
         ReferenceStore.ReplaceReference(this);
 
-        Time = MaxTime;
+        SetTimeFromSettings();
     }
 
     private void Update()
@@ -102,18 +134,5 @@ public class TimeResourceManager : MonoBehaviour
 
         // invoke event
         TimeChanged?.Invoke(-drain);
-    }
-
-    public void AddMultiplier(float multiplierAmount)
-    {
-        AdditionMultiplier = Mathf.Clamp(AdditionMultiplier + multiplierAmount, 1, multiplierMax);
-
-        multiplierDrainStartTime = UnityEngine.Time.time + multiplierDrainDelay;
-    }
-
-    public void SetTimeFromSettings(float time)
-    {
-        MaxTime = time;
-        Time = time;
     }
 }

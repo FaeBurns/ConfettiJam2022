@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BeanLib.References;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,6 +11,8 @@ using UnityEngine.UI;
 public class CollectibleGoalManager : ReferenceResolvedBehaviour
 {
     private Vector2 startPosition;
+
+    [AutoReference] private TimeResourceManager timeManager;
 
     [BindComponent] private Animator animator;
 
@@ -87,6 +85,15 @@ public class CollectibleGoalManager : ReferenceResolvedBehaviour
         }
 
         Instantiate(showcasePrefab, animatedShowcaseElement).GetComponent<Image>().sprite = finalSprite;
+    }
+
+    /// <summary>
+    /// Animation Function - disable the player.
+    /// </summary>
+    public void ANIMFUNC_DisablePlayer()
+    {
+        timeManager.enabled = false;
+        FindObjectOfType<PlayerMovement>().MovementState = PlayerMovementState.Dead;
     }
 
     /// <summary>
