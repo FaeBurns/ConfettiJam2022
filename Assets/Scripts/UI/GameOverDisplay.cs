@@ -25,6 +25,7 @@ public class GameOverDisplay : ReferenceResolvedBehaviour
 
     public void ButtonMenu()
     {
+        TipRandomizer.Reset();
         SceneManager.LoadScene(0);
     }
 
