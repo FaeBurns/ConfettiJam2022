@@ -5,12 +5,21 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
+/// <summary>
+/// Component responsible for handling the funny button.
+/// </summary>
 public class RickButton : MonoBehaviour
 {
-    const string url = @"https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    /// <summary>
+    /// Target URL.
+    /// </summary>
+    private const string Url = @"https://www.youtube.com/watch?v=dQw4w9WgXcQ";
 
+    /// <summary>
+    /// Click handler.
+    /// </summary>
     public void Click()
     {
-        Application.OpenURL(url);
+        Application.OpenURL(Url);
     }
 }

@@ -3,8 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Component responsible for showing the directions to the collectibles.
+/// </summary>
 public class ClockCompass : MonoBehaviour
 {
+    private GameObject player;
+
     private List<GameObject> spawnedObjects = new List<GameObject>();
 
     [SerializeField] private List<Collectible> targets = new List<Collectible>();
@@ -13,68 +18,51 @@ public class ClockCompass : MonoBehaviour
 
     private void Start()
     {
-        targets.Execute((target) => target.OnCollect += Target_OnCollect);
+        targets.Execute((target) => target.OnCollect += (_) => Target_OnCollect(target));
         Spawn();
+
+        player = FindObjectOfType<PlayerMovement>().gameObject;
     }
 
     private void Update()
     {
+        transform.position = Camera.main.WorldToScreenPoint(player.transform.position);
+
         for (int i = 0; i < spawnedObjects.Count; i++)
         {
             GameObject uiObject = spawnedObjects[i];
             Collectible target = targets[i];
 
-            Vector2 direction = target.transform.position - transform.position;
+            Vector2 direction = target.transform.position - Camera.main.transform.position;
 
-            uiObject.transform.forward = direction;
+            float angle = Vector2.SignedAngle(Vector2.right, direction);
+
+            uiObject.transform.rotation = Quaternion.Euler(0, 0, angle);
         }
     }
 
-    private void Target_OnCollect(Sprite obj)
+    private void Target_OnCollect(Collectible target)
     {
-        Cull();
-        Spawn();
+        Remove(target);
         Update();
     }
 
     private void Spawn()
     {
-        int count = GetValidCount();
 
-        int diff = count - targets.Count;
-
-        for (int i = 0; i < diff; i++)
+        for (int i = 0; i < targets.Count; i++)
         {
-            spawnedObjects.Add(Instantiate(prefab, transform).transform.parent.gameObject);
+            spawnedObjects.Add(Instantiate(prefab, transform).transform.gameObject);
         }
     }
 
-    private void Cull()
+    private void Remove(Collectible targetForRemoval)
     {
-        int count = GetValidCount();
+        // remove target
+        targets.Remove(targetForRemoval);
 
-        int passed = 0;
-        foreach (GameObject obj in spawnedObjects)
-        {
-            if (passed >= count)
-            {
-                Destroy(obj);
-            }
-            passed++;
-        }
-    }
-
-    private int GetValidCount()
-    {
-        int validCount = 0;
-        foreach (Collectible obj in targets)
-        {
-            if (obj != null)
-            {
-                validCount++;
-            }
-        }
-
-        return validCount;
+        // remove one of the trackers
+        Destroy(spawnedObjects[0]);
+        spawnedObjects.RemoveAt(0);
     }
 }
