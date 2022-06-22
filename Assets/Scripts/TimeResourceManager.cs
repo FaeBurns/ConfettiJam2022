@@ -53,14 +53,14 @@ public class TimeResourceManager : MonoBehaviour
     /// Adds time to the store.
     /// </summary>
     /// <param name="amount">The amount of time to add.</param>
-    public void Add(float amount)
+    public void Add(float amount, bool affectedByMultiplier = true)
     {
         if (!enabled)
         {
             return;
         }
 
-        amount *= AdditionMultiplier;
+        amount *= affectedByMultiplier ? AdditionMultiplier : 1;
 
         amount = ClampAmount(amount);
         Time += amount;

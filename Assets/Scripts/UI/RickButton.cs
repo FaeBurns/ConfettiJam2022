@@ -13,7 +13,7 @@ public class RickButton : MonoBehaviour
     /// <summary>
     /// Target URL.
     /// </summary>
-    private const string Url = @"https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+    private const string Url = @"https://www.youtube.com/watch?v=iik25wqIuFo";
 
     /// <summary>
     /// Click handler.

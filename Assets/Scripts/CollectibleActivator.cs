@@ -7,10 +7,12 @@ using UnityEngine;
 /// </summary>
 public class CollectibleActivator : ReferenceResolvedBehaviour
 {
+    private int updatesPassed = 0;
     private readonly List<GameObject> targets = new List<GameObject>();
 
     [BindComponent(Child = true)] private SpriteRenderer spriteRenderer;
 
+    [SerializeField] private int updatesBeforeStop = 5;
     [SerializeField] private GameObject particles;
 
     /// <summary>
@@ -41,11 +43,15 @@ public class CollectibleActivator : ReferenceResolvedBehaviour
 
     private void Update()
     {
-        // stop further updates and trigger events.
-        enabled = false;
+        updatesPassed++;
+        if (updatesPassed >= updatesBeforeStop)
+        {
+            // stop further updates and trigger events.
+            enabled = false;
 
-        // update visuals after collision events
-        UpdateVisuals();
+            // update visuals after collision events
+            UpdateVisuals();
+        }
     }
 
     private void OnDeath(GameObject target)
