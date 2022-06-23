@@ -12,11 +12,15 @@ public class Collectible : ReferenceResolvedBehaviour
     [AutoReference] private CollectibleGoalManager goalManager;
     [AutoReference] private TimeResourceManager timeManager;
 
+    [BindComponent] private ClipCollection audioCollection;
     [BindComponent(Child = true)] private SpriteRenderer gfx;
     [BindComponent(Parent = true)] private CollectibleActivator activator;
 
     [SerializeField] private float timeReward = 30f;
 
+    /// <summary>
+    /// Event triggered when this <see cref="Collectible"/> is collected.
+    /// </summary>
     public event Action<Sprite> OnCollect;
 
     /// <inheritdoc/>
@@ -34,6 +38,8 @@ public class Collectible : ReferenceResolvedBehaviour
             OnCollect(gfx.sprite);
 
             timeManager.Add(timeReward, false);
+
+            audioCollection.PlayCategory("Collect");
 
             Destroy(particleObj);
             Destroy(gameObject.transform.parent.gameObject);

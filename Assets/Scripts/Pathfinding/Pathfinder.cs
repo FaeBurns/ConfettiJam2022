@@ -65,7 +65,7 @@ public class Pathfinder : MonoBehaviour
 
     private void Awake()
     {
-        ReferenceStore.ReplaceReference(this);
+        ReferenceStore.RegisterReference(this);
 
         CollectTiles();
 

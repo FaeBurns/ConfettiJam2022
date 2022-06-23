@@ -23,7 +23,7 @@ public class PlayerHealth : ReferenceResolvedBehaviour
 
     private void Awake()
     {
-        ReferenceStore.ReplaceReference(this);
+        ReferenceStore.RegisterReference(this);
     }
 
     /// <inheritdoc/>

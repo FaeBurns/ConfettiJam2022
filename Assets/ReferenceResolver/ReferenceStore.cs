@@ -12,29 +12,12 @@ namespace BeanLib.References
         private static readonly Dictionary<Type, object> References = new Dictionary<Type, object>();
 
         /// <summary>
-        /// Registers a new reference of the specified type.
-        /// </summary>
-        /// <typeparam name="T">The type to register.</typeparam>
-        /// <param name="reference">The object to register.</param>
-        public static void RegisterReference<T>(T reference)
-        {
-            Type referenceType = reference.GetType();
-
-            if (References.ContainsKey(referenceType))
-            {
-                throw new ArgumentException($"Reference of type {referenceType} already exists in store");
-            }
-
-            References.Add(referenceType, reference);
-        }
-
-        /// <summary>
         /// Replaces an already existing reference with a new one of the same type.
         /// If no reference of the specified type can already be found, then a new one is added.
         /// </summary>
         /// <typeparam name="T">The type to replace.</typeparam>
         /// <param name="reference">The object to register.</param>
-        public static void ReplaceReference<T>(T reference) where T : Component
+        public static void RegisterReference<T>(T reference) where T : Component
         {
             Type referenceType = reference.GetType();
 

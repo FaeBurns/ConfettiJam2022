@@ -13,7 +13,7 @@ namespace BeanLib.References
         {
             foreach (Component component in components)
             {
-                ReferenceStore.ReplaceReference(component);
+                ReferenceStore.RegisterReference(component);
             }
         }
     }

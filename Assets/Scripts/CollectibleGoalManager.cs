@@ -106,7 +106,7 @@ public class CollectibleGoalManager : ReferenceResolvedBehaviour
 
     private void Awake()
     {
-        ReferenceStore.ReplaceReference(this);
+        ReferenceStore.RegisterReference(this);
 
         startPosition = animatedShowcaseElement.transform.position;
     }

@@ -16,6 +16,7 @@ public class PlayerMovement : ReferenceResolvedBehaviour
     [AutoReference] private TimeResourceManager timeManager = null;
     [BindComponent] private Rigidbody2D rb = null;
     [BindMultiComponent(Child = true)] private TrailRenderer[] trailRenderers = null;
+    [BindComponent] private ClipCollection audioCollection;
 
     [Header("Children")]
     [SerializeField]
@@ -30,7 +31,7 @@ public class PlayerMovement : ReferenceResolvedBehaviour
     [SerializeField] private float velDrain = 0.95f;
 
     /// <summary>
-    /// Gets the current <see cref="PlayerMovementState"/>.
+    /// Gets or Sets the current <see cref="PlayerMovementState"/>.
     /// </summary>
     public PlayerMovementState MovementState
     {
@@ -102,6 +103,7 @@ public class PlayerMovement : ReferenceResolvedBehaviour
                 {
                     velToMove *= velDrain;
                 }
+
                 rb.MovePosition(rb.position + velToMove);
                 break;
             case PlayerMovementState.Dash:
@@ -119,7 +121,11 @@ public class PlayerMovement : ReferenceResolvedBehaviour
         // enter dash state
         MovementState = PlayerMovementState.Dash;
 
+        // add time multiplier
         timeManager.AddMultiplier(dashMultiplierBonus);
+
+        // play sound
+        audioCollection.PlayCategory("Dash");
 
         // drain time
         timeManager.Drain(timeCost);

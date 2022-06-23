@@ -1,5 +1,5 @@
-﻿using BeanLib.References;
-using System.Linq;
+﻿using System.Linq;
+using BeanLib.References;
 using UnityEngine;
 
 /// <summary>
@@ -10,7 +10,9 @@ public class PlayerAttack : ReferenceResolvedBehaviour
     private float cooldownFinishedTime = 0f;
 
     [AutoReference] private TimeResourceManager timeManager;
+
     [BindComponent(Child = true)] private TriggerCountCheck meleeOverlapTrigger = null;
+    [BindComponent] private ClipCollection audioCollection;
 
     [Header("References")]
     [SerializeField] private Transform mouseDirectionTransform;
@@ -94,6 +96,8 @@ public class PlayerAttack : ReferenceResolvedBehaviour
             }
         }
 
+        audioCollection.PlayCategory("Melee");
+
         cooldownFinishedTime = Time.time + meleeCooldown;
     }
 
@@ -140,6 +144,8 @@ public class PlayerAttack : ReferenceResolvedBehaviour
 
             Destroy(pelletObject, pelletAnimationLifetime);
         }
+
+        audioCollection.PlayCategory("Ranged");
 
         cooldownFinishedTime = Time.time + rangedCooldown;
 

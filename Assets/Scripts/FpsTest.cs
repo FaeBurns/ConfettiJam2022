@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Diagnostics;
-using UnityEngine;
+﻿using UnityEngine;
 
 
 public class FpsTest : MonoBehaviour

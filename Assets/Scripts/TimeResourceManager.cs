@@ -116,7 +116,7 @@ public class TimeResourceManager : MonoBehaviour
 
     private void Awake()
     {
-        ReferenceStore.ReplaceReference(this);
+        ReferenceStore.RegisterReference(this);
 
         SetTimeFromSettings();
     }
