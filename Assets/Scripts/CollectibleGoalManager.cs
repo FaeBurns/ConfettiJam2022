@@ -105,9 +105,14 @@ public class CollectibleGoalManager : ReferenceResolvedBehaviour
         SceneManager.LoadScene("EndScene");
     }
 
-    public void ANIMFUNC_PlaySound()
+    public void ANIMFUNC_PlayCollectSound()
     {
         audioCollection.PlayCategory("Collect");
+    }
+
+    public void ANIMFUNC_PlayConnectSound()
+    {
+        audioCollection.PlayCategory("Connect");
     }
 
     private void Awake()
