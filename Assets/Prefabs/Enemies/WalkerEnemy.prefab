@@ -175,7 +175,7 @@ MonoBehaviour:
   projectileThrowInterval: 0.2
   projectilePrefab: {fileID: 9132479878394050501, guid: 65b79cc45ef26af4e83ac6d146ad82e5, type: 3}
   projectileLaunchTransform: {fileID: 4011553188984659667}
-  attackPrepareTime: 0.5
+  attackPrepareTime: 0.25
   projectiles: []
 --- !u!58 &1339851671
 CircleCollider2D:
