@@ -59,7 +59,7 @@ public class PathfinderTester : ReferenceResolvedBehaviour
     {
         if (path == null)
         {
-            Debug.Log("Failed to create path");
+            //Debug.Log("Failed to create path");
             return;
         }
 

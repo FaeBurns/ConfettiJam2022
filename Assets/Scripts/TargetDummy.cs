@@ -18,6 +18,6 @@ public class TargetDummy : ReferenceResolvedBehaviour
 
     private void OnDamage(float damage, GameObject source, DamageType type)
     {
-        Debug.Log($"Target Dummy took {damage} damage of type {type} from object {source.name}");
+        //Debug.Log($"Target Dummy took {damage} damage of type {type} from object {source.name}");
     }
 }

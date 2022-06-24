@@ -25,7 +25,7 @@ public class ClipCollection : MonoBehaviour
 
             if (clips.Count == 0)
             {
-                Debug.LogWarning($"Clip category \"{category}\" is empty");
+                //Debug.Log($"Clip category \"{category}\" is empty");
                 return;
             }
 
@@ -37,7 +37,7 @@ public class ClipCollection : MonoBehaviour
             return;
         }
 
-        Debug.LogWarning($"Clip category \"{category}\" does not exist");
+        //Debug.Log($"Clip category \"{category}\" does not exist");
     }
 
     /// <summary>

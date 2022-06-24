@@ -300,7 +300,7 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
 
         if (path == null)
         {
-            Debug.Log("Enemy path was null");
+            //Debug.Log("Enemy path was null");
             NoPath();
             return;
         }
