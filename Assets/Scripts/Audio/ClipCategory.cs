@@ -18,7 +18,7 @@ public class ClipCategory : ScriptableObject
     /// Gets or sets a secondary volume multiplier to apply to all clips.
     /// </summary>
     [field: SerializeField]
-    public float GlobalVolume { get; set; }
+    public float GlobalVolume { get; set; } = 1f;
 
     /// <summary>
     /// Gets or Sets the <see cref="ClipVolume"/> collection.

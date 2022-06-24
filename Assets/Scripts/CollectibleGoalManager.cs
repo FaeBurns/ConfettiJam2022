@@ -15,6 +15,7 @@ public class CollectibleGoalManager : ReferenceResolvedBehaviour
     [AutoReference] private TimeResourceManager timeManager;
 
     [BindComponent] private Animator animator;
+    [BindComponent] private ClipCollection audioCollection;
 
     [SerializeField] private GameObject showcasePrefab;
 
@@ -102,6 +103,11 @@ public class CollectibleGoalManager : ReferenceResolvedBehaviour
     public void ANIMFUNC_EndGame()
     {
         SceneManager.LoadScene("EndScene");
+    }
+
+    public void ANIMFUNC_PlaySound()
+    {
+        audioCollection.PlayCategory("Collect");
     }
 
     private void Awake()

@@ -11,6 +11,11 @@ using UnityEngine;
 [Serializable]
 public class ClipVolume
 {
+    public ClipVolume()
+    {
+        Volume = 1f;
+    }
+
     /// <summary>
     /// Gets or sets the clip to use.
     /// </summary>

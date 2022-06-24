@@ -60,6 +60,11 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     [BindComponent(Child = true)] protected TriggerCountCheck TriggerCountCheck { get; set; }
 
     /// <summary>
+    /// Gets or Sets the <see cref="ClipCollection"/> component reference.
+    /// </summary>
+    [BindComponent] protected ClipCollection AudioCollection { get; set; }
+
+    /// <summary>
     /// Gets or Sets the <see cref="EnemyState"/> that describes the state of this enemy.
     /// </summary>
     protected EnemyState State
@@ -332,6 +337,8 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
 
             Rb.AddForce(direction * knockbackRecieved, ForceMode2D.Impulse);
         }
+
+        AudioCollection.PlayCategory("Hurt");
     }
 
     /// <summary>
@@ -437,6 +444,8 @@ public abstract class EnemyBase : ReferenceResolvedBehaviour
     private void OnDeath()
     {
         Destroy(Instantiate(deathParticlePrefab, transform.position, Quaternion.identity), 1);
+
+        AudioCollection.PlayCategory("Death");
 
         // reset multiplier drain without adding anything to it
         TimeManager.AddMultiplier(0);

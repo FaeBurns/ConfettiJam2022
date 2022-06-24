@@ -90,6 +90,7 @@ GameObject:
   - component: {fileID: 4011553189076627037}
   - component: {fileID: 4011553189076627038}
   - component: {fileID: 1339851671}
+  - component: {fileID: 2514833890008284434}
   m_Layer: 0
   m_Name: WalkerEnemy
   m_TagString: Enemy
@@ -105,7 +106,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4011553189076627040}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 144.35, y: 124.05, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4011553190893115582}
@@ -192,6 +193,20 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.5
+--- !u!114 &2514833890008284434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4011553189076627040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 510dfacde30923749a487547a02fdd55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  categories:
+  - {fileID: 11400000, guid: 0fb5a9ba29196a247a3a7bf1f68ceb38, type: 2}
 --- !u!1 &4011553189956503772
 GameObject:
   m_ObjectHideFlags: 0
