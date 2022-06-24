@@ -11,6 +11,7 @@ using UnityEngine.UI;
 public class CollectibleGoalManager : ReferenceResolvedBehaviour
 {
     private Vector2 startPosition;
+    private GameObject playerObject;
 
     [AutoReference] private TimeResourceManager timeManager;
 
@@ -107,12 +108,12 @@ public class CollectibleGoalManager : ReferenceResolvedBehaviour
 
     public void ANIMFUNC_PlayCollectSound()
     {
-        audioCollection.PlayCategory("Collect");
+        audioCollection.PlayCategory("Collect", playerObject.transform.position);
     }
 
     public void ANIMFUNC_PlayConnectSound()
     {
-        audioCollection.PlayCategory("Connect");
+        audioCollection.PlayCategory("Connect", playerObject.transform.position);
     }
 
     private void Awake()
@@ -120,6 +121,7 @@ public class CollectibleGoalManager : ReferenceResolvedBehaviour
         ReferenceStore.RegisterReference(this);
 
         startPosition = animatedShowcaseElement.transform.position;
+        playerObject = FindObjectOfType<PlayerMovement>().gameObject;
     }
 
     private void Update()

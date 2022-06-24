@@ -5,10 +5,8 @@ using UnityEngine;
 /// <summary>
 /// A Component holding a collection of categorized audio clips.
 /// </summary>
-public class ClipCollection : ReferenceResolvedBehaviour
+public class ClipCollection : MonoBehaviour
 {
-    [AutoReference] private AudioManager audioManager;
-
     [SerializeField] private List<ClipCategory> categories;
 
     private Dictionary<string, ClipCategory> categoryClips = new Dictionary<string, ClipCategory>();
@@ -34,7 +32,7 @@ public class ClipCollection : ReferenceResolvedBehaviour
             int index = Mathf.RoundToInt((clips.Count - 1) * Random.value);
             ClipVolume clip = clips[index];
 
-            audioManager.Play(clip.Clip, position, clip.Volume * categoryClips[category].GlobalVolume);
+            AudioSource.PlayClipAtPoint(clip.Clip, position, clip.Volume * categoryClips[category].GlobalVolume);
 
             return;
         }
