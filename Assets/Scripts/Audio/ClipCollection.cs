@@ -49,6 +49,11 @@ public class ClipCollection : MonoBehaviour
         PlayCategory(category, transform.position);
     }
 
+    private void Start()
+    {
+        OnValidate();
+    }
+
     private void OnValidate()
     {
         if (categoryClips == null)
