@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ConnectClipCategory
   m_EditorClassIdentifier: 
   <Category>k__BackingField: Connect
-  <GlobalVolume>k__BackingField: 0.2
+  <GlobalVolume>k__BackingField: 0.1
   <Clips>k__BackingField:
   - <Clip>k__BackingField: {fileID: 8300000, guid: d7fe86fd10d77624cbdfa1a492fc0bfd, type: 3}
     <Volume>k__BackingField: 1

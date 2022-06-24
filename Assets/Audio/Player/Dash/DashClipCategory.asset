@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: DashClipCategory
   m_EditorClassIdentifier: 
   <Category>k__BackingField: Dash
-  <GlobalVolume>k__BackingField: 0.1
+  <GlobalVolume>k__BackingField: 0.5
   <Clips>k__BackingField:
   - <Clip>k__BackingField: {fileID: 8300000, guid: 3207570f2377bc34097976e7bb419c25, type: 3}
     <Volume>k__BackingField: 1
